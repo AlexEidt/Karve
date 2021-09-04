@@ -10,22 +10,22 @@ public class UI {
     public static volatile boolean CARVING = false;
     public static volatile boolean HIGHLIGHT = false;
     public static volatile boolean HORIZONTAL = false;
-    public static String FILENAME = "ibex.png";
+    public static String FILENAME = "Documentation/starwars.png";
     public static final int ICON_SIZE = 30;
     public static final Color SEAM_COLOR = new Color(88, 150, 236);
 
     public static void main(String[] args) {
         File snapshotsDirectory = new File("Snapshots/");
         snapshotsDirectory.mkdir();
-        int[][] image = Utils.readImage(FILENAME);
-        SeamCarver verticalCarver = new SeamCarver(image);
-//        SeamCarver horizontalCarver = new SeamCarver(Utils.transpose(image));
+        SeamCarver verticalCarver = new SeamCarver(Utils.readImage(FILENAME));
+        SeamCarver horizontalCarver = new SeamCarver(
+                Utils.transpose(Utils.mirror(Utils.readImage(FILENAME)))
+        );
         SeamCarver[] carver = {verticalCarver};
 
-        int color = SEAM_COLOR.getRGB();
-        int highlightColor = ((color << 16) & 0xFF) | ((color << 8) & 0xFF) | (color & 0xFF);
+        int highlightColor = SEAM_COLOR.getRGB();
 
-        JFrame frame = new JFrame("Karver");
+        JFrame frame = new JFrame("Karve");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -37,6 +37,12 @@ public class UI {
 
         JPanel menuPanel = new JPanel();
         Font font = new Font("Arial", Font.PLAIN, 15);
+
+        JPanel titlePanel = new JPanel();
+        JLabel title = new JLabel("Karve", JLabel.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 30));
+        titlePanel.add(title);
+        menuPanel.add(titlePanel);
 
         JPanel sliderPanel = new JPanel(new GridLayout(2, 1));
         JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 500);
@@ -53,13 +59,13 @@ public class UI {
         highlight.setFont(font);
         highlight.addItemListener(e -> HIGHLIGHT = !HIGHLIGHT);
         checkBoxPanel.add(highlight);
-//        JCheckBox horizontal = new JCheckBox("Horizontal");
-//        horizontal.setFont(font);
-//        horizontal.addItemListener(e -> {
-//            HORIZONTAL = !HORIZONTAL;
-//            carver[0] = HORIZONTAL ? horizontalCarver : verticalCarver;
-//        });
-//        checkBoxPanel.add(horizontal);
+        JCheckBox horizontal = new JCheckBox("Horizontal");
+        horizontal.setFont(font);
+        horizontal.addItemListener(e -> {
+            HORIZONTAL = !HORIZONTAL;
+            carver[0] = HORIZONTAL ? horizontalCarver : verticalCarver;
+        });
+        checkBoxPanel.add(horizontal);
         menuPanel.add(checkBoxPanel);
 
         JPanel buttonPanel = new JPanel(new GridLayout(4, 1));
@@ -95,14 +101,20 @@ public class UI {
                 thread[0].start();
             }
             CARVING = !CARVING;
+            addButton.setEnabled(!CARVING);
+            removeButton.setEnabled(!CARVING);
         });
 
         addButton.addActionListener(e -> {
+            if (thread[0].isAlive()) thread[0].stop();
+            thread[0] = new Thread(animate);
             CARVING = false;
             carver[0].add(HIGHLIGHT, highlightColor);
             imageLabel.setIcon(getScaledImage(carver[0]));
         });
         removeButton.addActionListener(e -> {
+            if (thread[0].isAlive()) thread[0].stop();
+            thread[0] = new Thread(animate);
             CARVING = false;
             carver[0].remove(HIGHLIGHT, highlightColor);
             imageLabel.setIcon(getScaledImage(carver[0]));
@@ -113,6 +125,7 @@ public class UI {
                         carver[0].getImage(),
                         carver[0].getWidth(),
                         carver[0].getHeight(),
+                        HORIZONTAL,
                         "Snapshots/Snapshot",
                         "png"
                 );
@@ -147,6 +160,12 @@ public class UI {
         int width = carver.getWidth();
         int height = carver.getHeight();
         BufferedImage display = Utils.bufferImage(carver.getImage(), width, height);
+        if (HORIZONTAL) {
+            display = Utils.rotate(display, 90.0);
+            int temp = height;
+            height = width;
+            width = temp;
+        }
         ImageIcon displayIcon = new ImageIcon(display);
         Image scaledImage = displayIcon.getImage()
                 .getScaledInstance(width / 2, height / 2, Image.SCALE_SMOOTH);

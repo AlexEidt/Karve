@@ -1,4 +1,5 @@
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -120,8 +121,8 @@ public class Utils {
         return result;
     }
 
-    public static int[][] transpose(int[][] matrix) {
-        int height = matrix.length, width = matrix[0].length;
+    public static int[][] transpose(int[][] image) {
+        int height = image.length, width = image[0].length;
         int blockSize = 8;
         int[][] result = new int[width][height];
         for (int h = 0; h < height; h += blockSize) {
@@ -130,7 +131,7 @@ public class Utils {
                     if (i >= height) break;
                     for (int j = w; j < w + blockSize; j++) {
                         if (j >= width) break;
-                        result[j][i] = matrix[i][j];
+                        result[j][i] = image[i][j];
                     }
                 }
             }
@@ -138,10 +139,41 @@ public class Utils {
         return result;
     }
 
+    public static int[][] mirror(int[][] image) {
+        int height = image.length, width = image[0].length;
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width / 2; w++) {
+                int temp = image[h][w];
+                image[h][w] = image[h][width - 1 - w];
+                image[h][width - 1 - w] = temp;
+            }
+        }
+        return image;
+    }
+
+    // Code from this StackOverflow Thread:
+    // https://stackoverflow.com/questions/8639567/java-rotating-images
+    public static BufferedImage rotate(BufferedImage image, Double angle) {
+        double sin = Math.abs(Math.sin(Math.toRadians(angle))),
+                cos = Math.abs(Math.cos(Math.toRadians(angle)));
+        int w = image.getWidth();
+        int h = image.getHeight();
+        int newW = (int) Math.floor(w * cos + h * sin);
+        int newH = (int) Math.floor(h * cos + w * sin);
+        BufferedImage rotated = new BufferedImage(h, w, image.getType());
+        Graphics2D graphic = rotated.createGraphics();
+        graphic.translate((newW - w) / 2, (newH - h) / 2);
+        graphic.rotate(Math.toRadians(angle), w / 2, h / 2);
+        graphic.drawRenderedImage(image, null);
+        graphic.dispose();
+        return rotated;
+    }
+
     public static void writeImage(
             int[] image,
             int width,
             int height,
+            boolean horizontal,
             String filename,
             String extension
     ) throws IOException {
@@ -150,7 +182,9 @@ public class Utils {
         while (file.exists()) {
             file = new File(filename + i++ + "." + extension);
         }
-        ImageIO.write(bufferImage(image, width, height), extension, file);
+        BufferedImage bufferedImage = bufferImage(image, width, height);
+        if (horizontal) bufferedImage = rotate(bufferedImage, 90.0);
+        ImageIO.write(bufferedImage, extension, file);
     }
 
     public static int[][] readImage(String filename) {
