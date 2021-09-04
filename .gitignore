@@ -1,0 +1,7 @@
+# Directories
+/.idea
+/out
+/Snapshots
+
+# Files
+*.iml
