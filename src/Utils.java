@@ -1,3 +1,10 @@
+/*
+ * Utils
+ * Alex Eidt
+ * Contains a collection of useful (and unrelated) functions
+ * for the Seam Carver.
+ */
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -7,43 +14,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Utils {
+    // Returns the minimum of "a", "b", and "c".
     public static int min(int a, int b, int c) {
         return (a < b) ? (a < c ? a : c) : (b < c ? b : c);
     }
 
+    // Returns the minimum of "a" and "b".
     public static int min(int a, int b) {
         return a > b ? a : b;
     }
 
+    /*
+     * Converts and integer array representing pixels to a BufferedImage, which is needed
+     * to display the image on the User Interface.
+     *
+     * @param image     The flattened image. Each int represents an RGB pixel.
+     * @param width     The width of the image.
+     * @param height    The height of the image.
+     * @return          The BufferedImage of the input image.
+     */
     public static BufferedImage bufferImage(int[] image, int width, int height) {
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         bufferedImage.setRGB(0, 0, width, height, image, 0, width);
         return bufferedImage;
     }
 
-    public static double gauss(double x, double y, double sigma) {
-        double coefficient = 1 / (2 * Math.PI * sigma * sigma);
-        return coefficient * Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
-    }
-
-    public static double[][] gaussian(int size, double sigma) {
-        double[][] kernel = new double[size][size];
-        double total = 0.0;
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                double value = gauss(x - size / 2.0, y - size / 2.0, sigma);
-                kernel[y][x] = value;
-                total += value;
-            }
-        }
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                kernel[y][x] /= total;
-            }
-        }
-        return kernel;
-    }
-
+    /*
+     * Grayscales the image.
+     *
+     * @param image     The image to grayscale. Each int represents an RGB pixel.
+     * @return          The grayscaled image. Each byte represents the grayscale value.
+     */
     public static byte[][] grayscale(int[][] image) {
         int height = image.length, width = image[0].length;
         byte[][] gray = new byte[height][width];
@@ -59,6 +60,12 @@ public class Utils {
         return gray;
     }
 
+    /*
+     * Find the index of the minimum value in "data".
+     *
+     * @param data      The input array to find the minimum index of.
+     * @return          An integer representing the index of the minimum value in "data".
+     */
     public static int minIndex(int[] data) {
         int index = 0;
         int min = data[0];
@@ -71,6 +78,13 @@ public class Utils {
         return index;
     }
 
+    /*
+     * Edge pads an image.
+     *
+     * @param image     The image to pad. Grayscaled images only.
+     * @param pad       The width of the padding along with edges.
+     * @return          The padded image.
+     */
     public static byte[][] pad(byte[][] image, int pad) {
         int height = image.length, width = image[0].length;
         int pad2 = pad * 2;
@@ -95,6 +109,12 @@ public class Utils {
         return result;
     }
 
+    /*
+     * Find the gradients of the given image using the sobel filter.
+     *
+     * @param image     The image to edge.
+     * @return          Sobel image.
+     */
     public static List<List<Byte>> sobel(int[][] image) {
         int height = image.length + 2, width = image[0].length + 2;
         byte[][] gray = pad(grayscale(image), 1);
@@ -121,6 +141,13 @@ public class Utils {
         return result;
     }
 
+    /*
+     * Transposes the given image.
+     * The transposition is cache-oblivious.
+     *
+     * @param image     The image to tranpose.
+     * @return          The transposed image.
+     */
     public static int[][] transpose(int[][] image) {
         int height = image.length, width = image[0].length;
         int blockSize = 8;
@@ -139,6 +166,12 @@ public class Utils {
         return result;
     }
 
+    /*
+     * Mirros the image along the vertical axis.
+     *
+     * @param image     Image to mirror.
+     * @return          The mirrored image.
+     */
     public static int[][] mirror(int[][] image) {
         int height = image.length, width = image[0].length;
         for (int h = 0; h < height; h++) {
@@ -151,19 +184,21 @@ public class Utils {
         return image;
     }
 
-    // Code from this StackOverflow Thread:
-    // https://stackoverflow.com/questions/8639567/java-rotating-images
-    public static BufferedImage rotate(BufferedImage image, Double angle) {
-        double sin = Math.abs(Math.sin(Math.toRadians(angle))),
-                cos = Math.abs(Math.cos(Math.toRadians(angle)));
-        int w = image.getWidth();
-        int h = image.getHeight();
-        int newW = (int) Math.floor(w * cos + h * sin);
-        int newH = (int) Math.floor(h * cos + w * sin);
-        BufferedImage rotated = new BufferedImage(h, w, image.getType());
+    /*
+     * Rotates the given BufferedImage by 90 degrees.
+     * Original Code from this StackOverflow Thread:
+     * https://stackoverflow.com/questions/8639567/java-rotating-images
+     *
+     * @param image     BufferedImage to rotate.
+     * @return          The rotated BufferedImage.
+     */
+    public static BufferedImage rotate90(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        BufferedImage rotated = new BufferedImage(height, width, image.getType());
         Graphics2D graphic = rotated.createGraphics();
-        graphic.translate((newW - w) / 2, (newH - h) / 2);
-        graphic.rotate(Math.toRadians(angle), w / 2, h / 2);
+        graphic.translate((height - width) / 2, (width - height) / 2);
+        graphic.rotate(Math.PI / 2, width / 2, height / 2);
         graphic.drawRenderedImage(image, null);
         graphic.dispose();
         return rotated;
@@ -174,17 +209,12 @@ public class Utils {
             int width,
             int height,
             boolean horizontal,
-            String filename,
-            String extension
+            String filename
     ) throws IOException {
-        File file = new File(filename + "." + extension);
-        int i = 0;
-        while (file.exists()) {
-            file = new File(filename + i++ + "." + extension);
-        }
+        File file = new File(filename);
         BufferedImage bufferedImage = bufferImage(image, width, height);
-        if (horizontal) bufferedImage = rotate(bufferedImage, 90.0);
-        ImageIO.write(bufferedImage, extension, file);
+        if (horizontal) bufferedImage = rotate90(bufferedImage);
+        ImageIO.write(bufferedImage, "PNG", file);
     }
 
     public static int[][] readImage(String filename) {

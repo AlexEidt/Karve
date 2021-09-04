@@ -4,7 +4,7 @@
     <img src="Documentation/karve.png" width=55% />
 </p>
 
-**Karve** is a simple [Seam Carver](https://en.wikipedia.org/wiki/Seam_carving). Seam Carving is basically content aware image resizing. The algorithm preserves the objects in the background while less important background space by removing "seams" from the image.
+**Karve** is a simple [Seam Carver](https://en.wikipedia.org/wiki/Seam_carving). Seam Carving is basically content aware image resizing. The algorithm preserves the objects in the image while less important background space is removed by removing "seams" from the image.
 
 With Karve you can carve out vertical and horizontal seams, and save your images as well!
 
@@ -31,5 +31,5 @@ Button | Description
 
 # Acknowledgements
 
-* The image used in the demo is from Ralph McQuarrie who did most concept art for the original trilogy.
+* The image used in the demo is from Ralph McQuarrie who did most concept art for the Star Wars original trilogy.
 * The Seam Carving Algorithm closely follows that one detailed in MIT's [18.S191: Introduction to computational thinking for real-world problems](https://computationalthinking.mit.edu/Spring21/).
