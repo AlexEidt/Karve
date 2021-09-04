@@ -12,9 +12,9 @@ With Karve you can carve out vertical and horizontal seams, and save your images
 
 <p align="center">
 
-<img src="Documentation/demo1.gif" width=50% alt="Karve Seam Carver Demo" />
-<br />
-<img src="Documentation/demo2.gif" width=50% alt="Karve Seam Carver Demo" />
+<img src="Documentation/demo1.gif" width=100% alt="Karve Seam Carver Demo" />
+<br /><br /><br />
+<img src="Documentation/demo2.gif" width=100% alt="Karve Seam Carver Demo" />
 
 </p>
 
