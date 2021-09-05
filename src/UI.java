@@ -157,15 +157,15 @@ public class UI {
         Thread[] thread = {new Thread(animate)};
         // Manage animation thread when "Play/Pause" button is clicked.
         playButton.addActionListener(e -> {
+            CARVING = !CARVING;
             if (CARVING) {
+                playButton.setIcon(pause);
+                thread[0].start();
+            } else {
                 playButton.setIcon(play);
                 if (thread[0].isAlive()) thread[0].stop();
                 thread[0] = new Thread(animate);
-            } else {
-                playButton.setIcon(pause);
-                thread[0].start();
             }
-            CARVING = !CARVING;
             addButton.setEnabled(!CARVING);
             removeButton.setEnabled(!CARVING);
         });
@@ -224,6 +224,7 @@ public class UI {
             }
         });
 
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
@@ -241,13 +242,11 @@ public class UI {
         int scale = 1;
         float max = 1000000f;
         for (int i = 2; i < 21; i++) {
-            if (w % i == 0 && h % i == 0) {
-                float tempH = Math.abs(height - ((float) h / i));
-                float tempW = Math.abs(width - ((float) w / i));
-                if (tempH + tempW < max) {
-                    max = tempH + tempW;
-                    scale = i;
-                }
+            float tempH = Math.abs(height - ((float) h / i));
+            float tempW = Math.abs(width - ((float) w / i));
+            if (tempH + tempW < max) {
+                max = tempH + tempW;
+                scale = i;
             }
         }
         return scale;
