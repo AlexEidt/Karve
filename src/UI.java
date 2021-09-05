@@ -293,7 +293,7 @@ public class UI {
     public static ImageIcon getScaledImage(SeamCarver carver) {
         int width = carver.getWidth();
         int height = carver.getHeight();
-        BufferedImage display = Utils.bufferImage(carver.getImage(), carver.getWidth(), carver.getHeight());
+        BufferedImage display = Utils.bufferImage(carver.getImage(), width, height);
         if (HORIZONTAL) {
             display = Utils.rotate90(display);
             int temp = width;
