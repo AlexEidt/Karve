@@ -8,6 +8,8 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,20 +20,30 @@ public class UI {
     public static volatile boolean CARVING = false;
     // RECORDING is a flag storing whether the carving is being recorded.
     public static volatile boolean RECORDING = false;
+    // The direction the carving animation plays. Removing -> False, Adding -> True.
+    public static volatile boolean DIRECTION = false;
+    // Track frame numbers when recording.
+    public static volatile int COUNT = 0;
+    // Display image width;
+    public static volatile float DISPLAY_WIDTH_H = Toolkit.getDefaultToolkit().getScreenSize().width / 2f + 0.5f;
+    public static volatile float DISPLAY_WIDTH_V = DISPLAY_WIDTH_H;
+    // Display image height;
+    public static volatile float DISPLAY_HEIGHT_H = Toolkit.getDefaultToolkit().getScreenSize().height / 2f + 0.5f;
+    public static volatile float DISPLAY_HEIGHT_V = DISPLAY_HEIGHT_H;
+    // Size of the button icons.
+    public static final int ICON_SIZE = 30;
+
+    // -------------------------------------------------------------------
+    // USER SPECIFIED
+    // -------------------------------------------------------------------
     // HIGHLIGHT determines whether removed/added seams should be colored.
     public static volatile boolean HIGHLIGHT = false;
     // HORIZONTAL determines whether horizontal or vertical seam carving happens.
     public static volatile boolean HORIZONTAL = false;
     // The image file name to seam carve.
     public static String FILENAME = "Documentation/starwars.png";
-    // Size of the button icons.
-    public static final int ICON_SIZE = 30;
     // Color of the seams (if HIGHLIGHT is true).
     public static final Color SEAM_COLOR = new Color(88, 150, 236);
-    // Track frame numbers when recording.
-    public static int COUNT = 0;
-    public static final int SCREEN_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
-    public static final int SCREEN_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
 
     public static void main(String[] args) {
         File snapshotsDirectory = new File("Snapshots/");
@@ -44,6 +56,9 @@ public class UI {
         SeamCarver horizontalCarver = new SeamCarver(
                 Utils.transpose(Utils.mirror(Utils.readImage(FILENAME))));
         SeamCarver[] carver = {verticalCarver};
+
+        float stepW = DISPLAY_WIDTH_H / carver[0].getWidth();
+        float stepH = DISPLAY_HEIGHT_H / carver[0].getHeight();
 
         int highlightColor = SEAM_COLOR.getRGB();
 
@@ -117,16 +132,38 @@ public class UI {
             // Then begin reconstructing the image by the seams that were removed
             // and repeat until the user stops carving.
             while (CARVING) {
-                while (carver[0].remove(HIGHLIGHT, highlightColor)) {
-                    if (RECORDING) captureSnapshot(carver[0]);
-                    imageLabel.setIcon(getScaledImage(carver[0]));
-                    delay(slider.getValue());
+                if (DIRECTION) {
+                    while (carver[0].add(HIGHLIGHT, highlightColor)) {
+                        if (HORIZONTAL) DISPLAY_HEIGHT_H += stepH;
+                        else DISPLAY_WIDTH_V += stepW;
+                        if (RECORDING) captureSnapshot(carver[0]);
+                        imageLabel.setIcon(getScaledImage(carver[0]));
+                        delay(slider.getValue());
+                    }
+                    while (carver[0].remove(HIGHLIGHT, highlightColor)) {
+                        if (HORIZONTAL) DISPLAY_HEIGHT_H -= stepH;
+                        else DISPLAY_WIDTH_V -= stepW;
+                        if (RECORDING) captureSnapshot(carver[0]);
+                        imageLabel.setIcon(getScaledImage(carver[0]));
+                        delay(slider.getValue());
+                    }
+                } else {
+                    while (carver[0].remove(HIGHLIGHT, highlightColor)) {
+                        if (HORIZONTAL) DISPLAY_HEIGHT_H -= stepH;
+                        else DISPLAY_WIDTH_V -= stepW;
+                        if (RECORDING) captureSnapshot(carver[0]);
+                        imageLabel.setIcon(getScaledImage(carver[0]));
+                        delay(slider.getValue());
+                    }
+                    while (carver[0].add(HIGHLIGHT, highlightColor)) {
+                        if (HORIZONTAL) DISPLAY_HEIGHT_H += stepH;
+                        else DISPLAY_WIDTH_V += stepW;
+                        if (RECORDING) captureSnapshot(carver[0]);
+                        imageLabel.setIcon(getScaledImage(carver[0]));
+                        delay(slider.getValue());
+                    }
                 }
-                while (carver[0].add(HIGHLIGHT, highlightColor)) {
-                    if (RECORDING) captureSnapshot(carver[0]);
-                    imageLabel.setIcon(getScaledImage(carver[0]));
-                    delay(slider.getValue());
-                }
+
             }
         };
 
@@ -147,18 +184,20 @@ public class UI {
         });
         // Add seam back when "Add" button is clicked.
         addButton.addActionListener(e -> {
-            if (thread[0].isAlive()) thread[0].stop();
-            thread[0] = new Thread(animate);
+            DIRECTION = true;
             CARVING = false;
-            carver[0].add(HIGHLIGHT, highlightColor);
+            boolean valid = carver[0].add(HIGHLIGHT, highlightColor);
+            if (HORIZONTAL && valid) DISPLAY_HEIGHT_H += stepH;
+            else if (!HORIZONTAL && valid) DISPLAY_WIDTH_V += stepW;
             imageLabel.setIcon(getScaledImage(carver[0]));
         });
         // Remove seam when "Remove" button is clicked.
         removeButton.addActionListener(e -> {
-            if (thread[0].isAlive()) thread[0].stop();
-            thread[0] = new Thread(animate);
+            DIRECTION = false;
             CARVING = false;
-            carver[0].remove(HIGHLIGHT, highlightColor);
+            boolean valid = carver[0].remove(HIGHLIGHT, highlightColor);
+            if (HORIZONTAL && valid) DISPLAY_HEIGHT_H -= stepH;
+            else if (!HORIZONTAL && valid) DISPLAY_WIDTH_V -= stepW;
             imageLabel.setIcon(getScaledImage(carver[0]));
         });
         // Create a snapshot of the current image when the "Snapshot" button is clicked.
@@ -175,6 +214,33 @@ public class UI {
 
         frame.add(panel);
         frame.pack();
+
+        // Change pixels values of sobel image to change where seams appear.
+        // Change pixels by clicking on the image.
+        imageLabel.addMouseMotionListener(new MouseAdapter() {
+            private final int imageLabelWidth = imageLabel.getWidth();
+            private final int imageLabelHeight = imageLabel.getHeight();
+            private final int imageWidth = carver[0].getWidth();
+            private final int imageHeight = carver[0].getHeight();
+            private float labelStepW = (float) imageWidth / imageLabelWidth;
+            private float labelStepH = (float) imageHeight / imageLabelHeight;
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                float x = e.getX();
+                float y = e.getY();
+                int cX = (int) (x * labelStepW + 0.5f);
+                int cY = (int) (y * labelStepH + 0.5f);
+                if (HORIZONTAL) { int temp = cX; cX = cY; cY = temp; }
+                for (int i = cY - 1; i <= cY + 1; i++) {
+                    if (i < 0 || i >= imageHeight) continue;
+                    for (int j = cX - 1; j <= cX + 1; j++) {
+                        if (j < 0 || j >= imageWidth) continue;
+                        carver[0].setEdge(j, i);
+                    }
+                }
+            }
+        });
+
         frame.setVisible(true);
     }
 
@@ -216,19 +282,13 @@ public class UI {
      * @return          An ImageIcon representing the scaled image.
      */
     public static ImageIcon getScaledImage(SeamCarver carver) {
-        int width = carver.getWidth();
-        int height = carver.getHeight();
-        BufferedImage display = Utils.bufferImage(carver.getImage(), width, height);
-        if (HORIZONTAL) {
-            display = Utils.rotate90(display);
-            int temp = height;
-            height = width;
-            width = temp;
-        }
-        ImageIcon displayIcon = new ImageIcon(display);
-        Image scaledImage = displayIcon.getImage()
-                .getScaledInstance(width / 2, height / 2, Image.SCALE_SMOOTH);
-        return new ImageIcon(scaledImage);
+        int width = (int) (HORIZONTAL ? DISPLAY_WIDTH_H : DISPLAY_WIDTH_V);
+        int height = (int) (HORIZONTAL ? DISPLAY_HEIGHT_H : DISPLAY_HEIGHT_V);
+        BufferedImage display = Utils.bufferImage(carver.getImage(), carver.getWidth(), carver.getHeight());
+        if (HORIZONTAL) display = Utils.rotate90(display);
+        Image displayIcon = new ImageIcon(display).getImage();
+        displayIcon = displayIcon.getScaledInstance(Math.max(width, 1), Math.max(height, 1), Image.SCALE_SMOOTH);
+        return new ImageIcon(displayIcon);
     }
 
     /*

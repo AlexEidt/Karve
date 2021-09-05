@@ -159,6 +159,16 @@ public class SeamCarver {
     }
 
     /*
+     * Sets the edge to the maximum value at the given coordinates.
+     * 
+     * @param x     X Coordinate in columns of image.
+     * @param y     Y Coordinate in rows of image.
+     */
+    public void setEdge(int x, int y) {
+        this.edges.get(y).set(x, (byte) 255);
+    }
+
+    /*
      * Creates the energy map from the gradient image.
      * Learn more: https://www.youtube.com/watch?v=rpB6zQNsbQU
      */
