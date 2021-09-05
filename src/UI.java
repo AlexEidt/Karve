@@ -24,12 +24,8 @@ public class UI {
     public static volatile boolean DIRECTION = false;
     // Track frame numbers when recording.
     public static volatile int COUNT = 0;
-    // Display image width;
-    public static volatile float DISPLAY_WIDTH_H = Toolkit.getDefaultToolkit().getScreenSize().width / 2f + 0.5f;
-    public static volatile float DISPLAY_WIDTH_V = DISPLAY_WIDTH_H;
-    // Display image height;
-    public static volatile float DISPLAY_HEIGHT_H = Toolkit.getDefaultToolkit().getScreenSize().height / 2f + 0.5f;
-    public static volatile float DISPLAY_HEIGHT_V = DISPLAY_HEIGHT_H;
+    // Scaling factor for display image.
+    public static volatile int SCALE = 1;
     // Size of the button icons.
     public static final int ICON_SIZE = 30;
 
@@ -57,8 +53,7 @@ public class UI {
                 Utils.transpose(Utils.mirror(Utils.readImage(FILENAME))));
         SeamCarver[] carver = {verticalCarver};
 
-        float stepW = DISPLAY_WIDTH_H / carver[0].getWidth();
-        float stepH = DISPLAY_HEIGHT_H / carver[0].getHeight();
+        SCALE = getDimensions(carver[0].getWidth(), carver[0].getHeight());
 
         int highlightColor = SEAM_COLOR.getRGB();
 
@@ -134,30 +129,22 @@ public class UI {
             while (CARVING) {
                 if (DIRECTION) {
                     while (carver[0].add(HIGHLIGHT, highlightColor)) {
-                        if (HORIZONTAL) DISPLAY_HEIGHT_H += stepH;
-                        else DISPLAY_WIDTH_V += stepW;
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
                         delay(slider.getValue());
                     }
                     while (carver[0].remove(HIGHLIGHT, highlightColor)) {
-                        if (HORIZONTAL) DISPLAY_HEIGHT_H -= stepH;
-                        else DISPLAY_WIDTH_V -= stepW;
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
                         delay(slider.getValue());
                     }
                 } else {
                     while (carver[0].remove(HIGHLIGHT, highlightColor)) {
-                        if (HORIZONTAL) DISPLAY_HEIGHT_H -= stepH;
-                        else DISPLAY_WIDTH_V -= stepW;
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
                         delay(slider.getValue());
                     }
                     while (carver[0].add(HIGHLIGHT, highlightColor)) {
-                        if (HORIZONTAL) DISPLAY_HEIGHT_H += stepH;
-                        else DISPLAY_WIDTH_V += stepW;
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
                         delay(slider.getValue());
@@ -186,18 +173,14 @@ public class UI {
         addButton.addActionListener(e -> {
             DIRECTION = true;
             CARVING = false;
-            boolean valid = carver[0].add(HIGHLIGHT, highlightColor);
-            if (HORIZONTAL && valid) DISPLAY_HEIGHT_H += stepH;
-            else if (!HORIZONTAL && valid) DISPLAY_WIDTH_V += stepW;
+            carver[0].add(HIGHLIGHT, highlightColor);
             imageLabel.setIcon(getScaledImage(carver[0]));
         });
         // Remove seam when "Remove" button is clicked.
         removeButton.addActionListener(e -> {
             DIRECTION = false;
             CARVING = false;
-            boolean valid = carver[0].remove(HIGHLIGHT, highlightColor);
-            if (HORIZONTAL && valid) DISPLAY_HEIGHT_H -= stepH;
-            else if (!HORIZONTAL && valid) DISPLAY_WIDTH_V -= stepW;
+            carver[0].remove(HIGHLIGHT, highlightColor);
             imageLabel.setIcon(getScaledImage(carver[0]));
         });
         // Create a snapshot of the current image when the "Snapshot" button is clicked.
@@ -245,6 +228,32 @@ public class UI {
     }
 
     /*
+     * Finds the optimal scaling factor such that the display image will be
+     * approximately half the screen width and height.
+     *
+     * @param w         Width of Image.
+     * @param h         Height of Image.
+     * @return          Scaling factor.
+     */
+    public static int getDimensions(int w, int h) {
+        float width = (float) Toolkit.getDefaultToolkit().getScreenSize().width / 2f;
+        float height = (float) Toolkit.getDefaultToolkit().getScreenSize().height / 2f;
+        int scale = 1;
+        float max = 1000000f;
+        for (int i = 2; i < 21; i++) {
+            if (w % i == 0 && h % i == 0) {
+                float tempH = Math.abs(height - ((float) h / i));
+                float tempW = Math.abs(width - ((float) w / i));
+                if (tempH + tempW < max) {
+                    max = tempH + tempW;
+                    scale = i;
+                }
+            }
+        }
+        return scale;
+    }
+
+    /*
      * Captures the current image and saves to a PNG file in the "Snapshots" directory.
      *
      * @param carver    The SeamCarver being used to carve the image.
@@ -282,12 +291,20 @@ public class UI {
      * @return          An ImageIcon representing the scaled image.
      */
     public static ImageIcon getScaledImage(SeamCarver carver) {
-        int width = (int) (HORIZONTAL ? DISPLAY_WIDTH_H : DISPLAY_WIDTH_V);
-        int height = (int) (HORIZONTAL ? DISPLAY_HEIGHT_H : DISPLAY_HEIGHT_V);
+        int width = carver.getWidth();
+        int height = carver.getHeight();
         BufferedImage display = Utils.bufferImage(carver.getImage(), carver.getWidth(), carver.getHeight());
-        if (HORIZONTAL) display = Utils.rotate90(display);
+        if (HORIZONTAL) {
+            display = Utils.rotate90(display);
+            int temp = width;
+            width = height;
+            height = temp;
+        }
         Image displayIcon = new ImageIcon(display).getImage();
-        displayIcon = displayIcon.getScaledInstance(Math.max(width, 1), Math.max(height, 1), Image.SCALE_SMOOTH);
+        displayIcon = displayIcon.getScaledInstance(
+                Math.max(width / SCALE, 1),
+                Math.max(height / SCALE, 1),
+                Image.SCALE_SMOOTH);
         return new ImageIcon(displayIcon);
     }
 
