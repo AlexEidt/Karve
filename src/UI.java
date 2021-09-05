@@ -46,7 +46,7 @@ public class UI {
         snapshotsDirectory.mkdir();
 
         // Create Seam Carver for vertical Seam Carving.
-        SeamCarver verticalCarver = new SeamCarver(Utils.readImage(FILENAME));
+        SeamCarver verticalCarver = new SeamCarver(FILENAME);
         // Create Seam Carver for horizontal Seam Carving by mirror and then
         // transposing the image.
         SeamCarver horizontalCarver = new SeamCarver(

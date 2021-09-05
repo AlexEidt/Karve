@@ -32,6 +32,12 @@ public class SeamCarver {
     // Width of the image.
     private int width;
 
+    // Constructor which takes in a filename of the image to be carved.
+    public SeamCarver(String filename) {
+        this(Utils.readImage(filename));
+    }
+
+    // Constructor which takes in an 2D image array where each int represents the RGB pixel.
     public SeamCarver(int[][] image) {
         this.height = image.length;
         this.width = image[0].length;
