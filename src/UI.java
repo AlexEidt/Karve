@@ -38,6 +38,8 @@ public class UI {
     public static volatile boolean HORIZONTAL = false;
     // The image file name to seam carve.
     public static String FILENAME = "Documentation/starwars.png";
+    // File path to the Icons folder. MUST end with a slash or backslash.
+    public static String ICONS_FOLDER = "Icons/";
     // Color of the seams (if HIGHLIGHT is true).
     public static final Color SEAM_COLOR = new Color(88, 150, 236);
 
@@ -114,12 +116,12 @@ public class UI {
 
         // Add all "Pause/Play", "Add", "Remove" and "Snapshot" buttons.
         JPanel buttonPanel = new JPanel(new GridLayout(4, 1));
-        ImageIcon play = buttonIcon("Icons/play.png");
-        ImageIcon pause = buttonIcon("Icons/pause.png");
+        ImageIcon play = buttonIcon(ICONS_FOLDER + "play.png");
+        ImageIcon pause = buttonIcon(ICONS_FOLDER + "pause.png");
         JButton playButton = new JButton(play);
-        JButton addButton = new JButton(buttonIcon("Icons/add.png"));
-        JButton removeButton = new JButton(buttonIcon("Icons/remove.png"));
-        JButton snapshotButton = new JButton(buttonIcon("Icons/snapshot.png"));
+        JButton addButton = new JButton(buttonIcon(ICONS_FOLDER + "add.png"));
+        JButton removeButton = new JButton(buttonIcon(ICONS_FOLDER + "remove.png"));
+        JButton snapshotButton = new JButton(buttonIcon(ICONS_FOLDER + "snapshot.png"));
 
         // Function to run in separate thread when the "Play" button is pressed.
         Runnable animate = () -> {
