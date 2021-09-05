@@ -32,9 +32,6 @@ public class SeamCarver {
     // Width of the image.
     private int width;
 
-    /*
-     *
-     */
     public SeamCarver(int[][] image) {
         this.height = image.length;
         this.width = image[0].length;
