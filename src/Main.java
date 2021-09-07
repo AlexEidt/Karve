@@ -1,5 +1,5 @@
 /*
- * UI
+ * Main
  * Alex Eidt
  * Runs the Graphical User Interface (GUI) window that allows the user
  * to interface with the Karver.
@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class UI {
+public class Main {
     // CARVING is a flag storing whether or not the carving animation is happening.
     public static volatile boolean CARVING = false;
     // RECORDING is a flag storing whether the carving is being recorded.
@@ -36,6 +36,8 @@ public class UI {
     public static volatile boolean HIGHLIGHT = false;
     // HORIZONTAL determines whether horizontal or vertical seam carving happens.
     public static volatile boolean HORIZONTAL = false;
+    // Determines the width of the "brush" used to remove edges by clicking on the image.
+    public static volatile int BRUSH_WIDTH = 5;
     // The image file name to seam carve.
     public static String FILENAME = "Documentation/starwars.png";
     // File path to the Icons folder. MUST end with a slash or backslash.
@@ -175,15 +177,15 @@ public class UI {
         addButton.addActionListener(e -> {
             DIRECTION = true;
             CARVING = false;
-            carver[0].add(HIGHLIGHT, highlightColor);
-            imageLabel.setIcon(getScaledImage(carver[0]));
+            boolean valid = carver[0].add(HIGHLIGHT, highlightColor);
+            if (valid) imageLabel.setIcon(getScaledImage(carver[0]));
         });
         // Remove seam when "Remove" button is clicked.
         removeButton.addActionListener(e -> {
             DIRECTION = false;
             CARVING = false;
-            carver[0].remove(HIGHLIGHT, highlightColor);
-            imageLabel.setIcon(getScaledImage(carver[0]));
+            boolean valid = carver[0].remove(HIGHLIGHT, highlightColor);
+            if (valid) imageLabel.setIcon(getScaledImage(carver[0]));
         });
         // Create a snapshot of the current image when the "Snapshot" button is clicked.
         snapshotButton.addActionListener(e -> captureSnapshot(carver[0]));
@@ -216,9 +218,9 @@ public class UI {
                 int cX = (int) (x * labelStepW + 0.5f);
                 int cY = (int) (y * labelStepH + 0.5f);
                 if (HORIZONTAL) { int temp = cX; cX = cY; cY = temp; }
-                for (int i = cY - 1; i <= cY + 1; i++) {
+                for (int i = cY - BRUSH_WIDTH; i <= cY + BRUSH_WIDTH; i++) {
                     if (i < 0 || i >= imageHeight) continue;
-                    for (int j = cX - 1; j <= cX + 1; j++) {
+                    for (int j = cX - BRUSH_WIDTH; j <= cX + BRUSH_WIDTH; j++) {
                         if (j < 0 || j >= imageWidth) continue;
                         carver[0].setEdge(j, i);
                     }

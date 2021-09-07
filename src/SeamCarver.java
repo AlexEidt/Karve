@@ -4,6 +4,7 @@
  * Implements the SeamCarver class.
  */
 
+import java.io.IOException;
 import java.util.*;
 
 /*
@@ -162,13 +163,13 @@ public class SeamCarver {
     }
 
     /*
-     * Sets the edge to the maximum value at the given coordinates.
+     * Sets the edge to the minimum value at the given coordinates.
      * 
      * @param x     X Coordinate in columns of image.
      * @param y     Y Coordinate in rows of image.
      */
     public void setEdge(int x, int y) {
-        this.edges.get(y).set(x, (byte) 255);
+        this.edges.get(y).set(x, (byte) 0);
     }
 
     /*
