@@ -51,7 +51,7 @@ public class Main {
 
         // Create Seam Carver for vertical Seam Carving.
         SeamCarver verticalCarver = new SeamCarver(FILENAME);
-        // Create Seam Carver for horizontal Seam Carving by mirror and then
+        // Create Seam Carver for horizontal Seam Carving by mirroring and then
         // transposing the image.
         SeamCarver horizontalCarver = new SeamCarver(
                 Utils.transpose(Utils.mirror(Utils.readImage(FILENAME))));
@@ -59,6 +59,7 @@ public class Main {
 
         SCALE = getDimensions(carver[0].getWidth(), carver[0].getHeight());
 
+        // The seam color.
         int highlightColor = SEAM_COLOR.getRGB();
 
         JFrame frame = new JFrame("Karve");
@@ -132,23 +133,23 @@ public class Main {
             // and repeat until the user stops carving.
             while (CARVING) {
                 if (DIRECTION) {
-                    while (carver[0].add(HIGHLIGHT, highlightColor)) {
+                    while (CARVING && carver[0].add(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
                         delay(slider.getValue());
                     }
-                    while (carver[0].remove(HIGHLIGHT, highlightColor)) {
+                    while (CARVING && carver[0].remove(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
                         delay(slider.getValue());
                     }
                 } else {
-                    while (carver[0].remove(HIGHLIGHT, highlightColor)) {
+                    while (CARVING && carver[0].remove(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
                         delay(slider.getValue());
                     }
-                    while (carver[0].add(HIGHLIGHT, highlightColor)) {
+                    while (CARVING && carver[0].add(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
                         delay(slider.getValue());
@@ -161,17 +162,16 @@ public class Main {
         Thread[] thread = {new Thread(animate)};
         // Manage animation thread when "Play/Pause" button is clicked.
         playButton.addActionListener(e -> {
+            addButton.setEnabled(CARVING);
+            removeButton.setEnabled(CARVING);
             CARVING = !CARVING;
             if (CARVING) {
                 playButton.setIcon(pause);
                 thread[0].start();
             } else {
                 playButton.setIcon(play);
-                if (thread[0].isAlive()) thread[0].stop();
                 thread[0] = new Thread(animate);
             }
-            addButton.setEnabled(!CARVING);
-            removeButton.setEnabled(!CARVING);
         });
         // Add seam back when "Add" button is clicked.
         addButton.addActionListener(e -> {
