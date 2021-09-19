@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Utils {
     // Returns the minimum of "a", "b", and "c".
@@ -182,6 +183,61 @@ public class Utils {
             }
         }
         return image;
+    }
+
+    /*
+     * Captures the current image and saves to a PNG file in the "Snapshots" directory.
+     *
+     * @param carver    The SeamCarver being used to carve the image.
+     * @return          See "Snapshots" directory.
+     */
+    public static void captureSnapshot(SeamCarver carver, String filename, boolean horizontal) {
+        try {
+            Utils.writeImage(
+                    carver.getImage(), carver.getWidth(), carver.getHeight(),
+                    horizontal,
+                    filename);
+        } catch (IOException ioException) {
+            System.out.println("Failed to create Snapshot Image.");
+            ioException.printStackTrace();
+        }
+    }
+
+    /*
+     * Delays the main thread for "delay" milliseconds.
+     *
+     * @param delay:    Delay in milliseconds.
+     */
+    public static void delay(int delay) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(delay);
+        } catch (InterruptedException interruptedException) {
+            interruptedException.printStackTrace();
+        }
+    }
+
+    /*
+     * Finds the optimal scaling factor such that the display image will be
+     * approximately half the screen width and height.
+     *
+     * @param w         Width of Image.
+     * @param h         Height of Image.
+     * @return          Scaling factor.
+     */
+    public static int getDimensions(int w, int h) {
+        float width = (float) Toolkit.getDefaultToolkit().getScreenSize().width / 2f;
+        float height = (float) Toolkit.getDefaultToolkit().getScreenSize().height / 2f;
+        int scale = 1;
+        float max = 1000000f;
+        for (int i = 2; i < 21; i++) {
+            float tempH = Math.abs(height - ((float) h / i));
+            float tempW = Math.abs(width - ((float) w / i));
+            if (tempH + tempW < max) {
+                max = tempH + tempW;
+                scale = i;
+            }
+        }
+        return scale;
     }
 
     /*

@@ -4,7 +4,6 @@
  * Implements the SeamCarver class.
  */
 
-import java.io.IOException;
 import java.util.*;
 
 /*
@@ -32,6 +31,10 @@ public class SeamCarver {
     private int height;
     // Width of the image.
     private int width;
+    // If the Seam Carver is being used without a UI, update is used to make the resizing
+    // faster by preventing a new image to be written to the "data" field every time a seam
+    // is removed.
+    private boolean update;
 
     // Constructor which takes in a filename of the image to be carved.
     public SeamCarver(String filename) {
@@ -42,6 +45,7 @@ public class SeamCarver {
     public SeamCarver(int[][] image) {
         this.height = image.length;
         this.width = image[0].length;
+        this.update = true;
         this.seams = new Stack<>();
         this.values = new Stack<>();
         this.edgeValues = new Stack<>();
@@ -78,6 +82,26 @@ public class SeamCarver {
     }
 
     /*
+     * Adds "count" seams to the image;
+     *
+     * @param count     Number of seams to add.
+     * @param highlight If true, highlight the added seam.
+     * @param color     The color of the highlighted seam.
+     * @return          The number of seams that were actually added.
+     */
+    public int add(int count, boolean highlight, int color) {
+        if (this.seams.isEmpty()) return 0;
+        this.update = false;
+        int index = 1;
+        while (index++ < count && this.seams.size() > 1) {
+            this.add(highlight, color);
+        }
+        this.update = true;
+        this.add(highlight, color);
+        return index - 1;
+    }
+
+    /*
      * Adds the most recently removed seam back onto the image.
      *
      * @param highlight If true, highlight the added seam.
@@ -100,13 +124,35 @@ public class SeamCarver {
             this.edges.get(i).add(path.get(i), edges.get(i));
         }
         this.width += 1;
-        if (highlight) {
-            updateImage(path, color);
-        } else {
-            updateImage();
+        if (this.update) {
+            if (highlight) {
+                updateImage(path, color);
+            } else {
+                updateImage();
+            }
         }
         energyMap();
         return true;
+    }
+
+    /*
+     * Remove "count" seams from the image;
+     *
+     * @param count     Number of seams to remove.
+     * @param highlight If true, highlight the added seam.
+     * @param color     The color of the highlighted seam.
+     * @return          The number of seams that were actually removed.
+     */
+    public int remove(int count, boolean highlight, int color) {
+        if (this.width == 2) return 0;
+        this.update = false;
+        int index = 1;
+        while (index++ < count && this.width > 3) {
+            this.remove(highlight, color);
+        }
+        this.update = true;
+        this.remove(highlight, color);
+        return index - 1;
     }
 
     /*
@@ -150,10 +196,12 @@ public class SeamCarver {
             edgeValues.add(this.edges.get(h).remove(minIndex));
         }
         this.width -= 1;
-        if (highlight) {
-            updateImage(path, color);
-        } else {
-            updateImage();
+        if (this.update) {
+            if (highlight) {
+                updateImage(path, color);
+            } else {
+                updateImage();
+            }
         }
         energyMap();
         this.seams.push(path);

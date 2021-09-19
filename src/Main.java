@@ -13,7 +13,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
     // CARVING is a flag storing whether or not the carving animation is happening.
@@ -57,7 +56,7 @@ public class Main {
                 Utils.transpose(Utils.mirror(Utils.readImage(FILENAME))));
         SeamCarver[] carver = {verticalCarver};
 
-        SCALE = getDimensions(carver[0].getWidth(), carver[0].getHeight());
+        SCALE = Utils.getDimensions(carver[0].getWidth(), carver[0].getHeight());
 
         // The seam color.
         int highlightColor = SEAM_COLOR.getRGB();
@@ -136,26 +135,25 @@ public class Main {
                     while (CARVING && carver[0].add(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
-                        delay(slider.getValue());
+                        Utils.delay(slider.getValue());
                     }
                     while (CARVING && carver[0].remove(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
-                        delay(slider.getValue());
+                        Utils.delay(slider.getValue());
                     }
                 } else {
                     while (CARVING && carver[0].remove(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
-                        delay(slider.getValue());
+                        Utils.delay(slider.getValue());
                     }
                     while (CARVING && carver[0].add(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
                         imageLabel.setIcon(getScaledImage(carver[0]));
-                        delay(slider.getValue());
+                        Utils.delay(slider.getValue());
                     }
                 }
-
             }
         };
 
@@ -176,14 +174,12 @@ public class Main {
         // Add seam back when "Add" button is clicked.
         addButton.addActionListener(e -> {
             DIRECTION = true;
-            CARVING = false;
             boolean valid = carver[0].add(HIGHLIGHT, highlightColor);
             if (valid) imageLabel.setIcon(getScaledImage(carver[0]));
         });
         // Remove seam when "Remove" button is clicked.
         removeButton.addActionListener(e -> {
             DIRECTION = false;
-            CARVING = false;
             boolean valid = carver[0].remove(HIGHLIGHT, highlightColor);
             if (valid) imageLabel.setIcon(getScaledImage(carver[0]));
         });
@@ -233,61 +229,6 @@ public class Main {
     }
 
     /*
-     * Finds the optimal scaling factor such that the display image will be
-     * approximately half the screen width and height.
-     *
-     * @param w         Width of Image.
-     * @param h         Height of Image.
-     * @return          Scaling factor.
-     */
-    public static int getDimensions(int w, int h) {
-        float width = (float) Toolkit.getDefaultToolkit().getScreenSize().width / 2f;
-        float height = (float) Toolkit.getDefaultToolkit().getScreenSize().height / 2f;
-        int scale = 1;
-        float max = 1000000f;
-        for (int i = 2; i < 21; i++) {
-            float tempH = Math.abs(height - ((float) h / i));
-            float tempW = Math.abs(width - ((float) w / i));
-            if (tempH + tempW < max) {
-                max = tempH + tempW;
-                scale = i;
-            }
-        }
-        return scale;
-    }
-
-    /*
-     * Captures the current image and saves to a PNG file in the "Snapshots" directory.
-     *
-     * @param carver    The SeamCarver being used to carve the image.
-     * @return          See "Snapshots" directory.
-     */
-    public static void captureSnapshot(SeamCarver carver) {
-        try {
-            Utils.writeImage(
-                    carver.getImage(), carver.getWidth(), carver.getHeight(),
-                    HORIZONTAL,
-                    "Snapshots/Snapshot" + COUNT++ + ".png");
-        } catch (IOException ioException) {
-            System.out.println("Failed to create Snapshot Image.");
-            ioException.printStackTrace();
-        }
-    }
-
-    /*
-     * Delays the main thread for "delay" milliseconds.
-     *
-     * @param delay:    Delay in milliseconds.
-     */
-    public static void delay(int delay) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(delay);
-        } catch (InterruptedException interruptedException) {
-            interruptedException.printStackTrace();
-        }
-    }
-
-    /*
      * Scales the image being carved.
      *
      * @param carver:   The SeamCarver being used to carve the image.
@@ -309,6 +250,24 @@ public class Main {
                 Math.max(height / SCALE, 1),
                 Image.SCALE_SMOOTH);
         return new ImageIcon(displayIcon);
+    }
+
+    /*
+     * Captures the current image and saves to a PNG file in the "Snapshots" directory.
+     *
+     * @param carver    The SeamCarver being used to carve the image.
+     * @return          See "Snapshots" directory.
+     */
+    public static void captureSnapshot(SeamCarver carver) {
+        try {
+            Utils.writeImage(
+                    carver.getImage(), carver.getWidth(), carver.getHeight(),
+                    HORIZONTAL,
+                    "Snapshots/Snapshot" + COUNT++ + ".png");
+        } catch (IOException ioException) {
+            System.out.println("Failed to create Snapshot Image.");
+            ioException.printStackTrace();
+        }
     }
 
     /*
