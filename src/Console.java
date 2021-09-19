@@ -54,6 +54,15 @@ public class Console {
         console.close();
     }
 
+    /*
+     * Prompt the user for a response and continue prompting until the user
+     * enters a valid choice.
+     *
+     * @param console   The console scanner.
+     * @param prompt    The prompt to print to the user.
+     * @param valid     Valid responses to the prompt.
+     * @return          The character the user responded.
+     */
     public static char getUserData(Scanner console, String prompt, String valid) {
         System.out.println(prompt);
         String data = console.next().toLowerCase(Locale.ROOT);
