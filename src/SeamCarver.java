@@ -53,7 +53,7 @@ public class SeamCarver {
         this.edges = Utils.sobel(image);
         this.data = new int[this.height * this.width];
 
-        energyMap(); // Create Energy Map.
+        this.energyMap(); // Create Energy Map.
         // Copy the "image" into "this.image" and "this.data".
         int index = 0;
         for (int h = 0; h < this.height; h++) {
@@ -126,12 +126,12 @@ public class SeamCarver {
         this.width += 1;
         if (this.update) {
             if (highlight) {
-                updateImage(path, color);
+                this.updateImage(path, color);
             } else {
-                updateImage();
+                this.updateImage();
             }
         }
-        energyMap();
+        this.energyMap();
         return true;
     }
 
@@ -198,12 +198,12 @@ public class SeamCarver {
         this.width -= 1;
         if (this.update) {
             if (highlight) {
-                updateImage(path, color);
+                this.updateImage(path, color);
             } else {
-                updateImage();
+                this.updateImage();
             }
         }
-        energyMap();
+        this.energyMap();
         this.seams.push(path);
         this.values.push(values);
         this.edgeValues.push(edgeValues);
