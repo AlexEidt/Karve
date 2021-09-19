@@ -42,9 +42,9 @@ public class Console {
         }
 
         SeamCarver carver = new SeamCarver(image);
-        int numCarved;
+
         System.out.println("Carving...");
-        numCarved = carver.remove(seams, showSeams, highlightColor);
+        int numCarved = carver.remove(seams, showSeams, highlightColor);
         System.out.println(numCarved + " seams carved from " + filename + ".");
         System.out.println("Output file name: ");
         String output = console.next();
