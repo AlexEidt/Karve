@@ -188,8 +188,10 @@ public class Utils {
     /*
      * Captures the current image and saves to a PNG file in the "Snapshots" directory.
      *
-     * @param carver    The SeamCarver being used to carve the image.
-     * @return          See "Snapshots" directory.
+     * @param carver        The SeamCarver being used to carve the image.
+     * @param filename      Filename of the output image.
+     * @param horizontal    For use with horizontal seam carving.
+     * @return              See "Snapshots" directory.
      */
     public static void captureSnapshot(SeamCarver carver, String filename, boolean horizontal) {
         try {
@@ -260,6 +262,15 @@ public class Utils {
         return rotated;
     }
 
+    /*
+     * Writes the given integer array to an image.
+     *
+     * @param image         Flattened image as an integer array. Each int represents an RGB pixel.
+     * @param width         The width of the image.
+     * @param height        The height of the image.
+     * @param horizontal    For use with horizontal seam carving.
+     * @param filename      Image file name.
+     */
     public static void writeImage(
             int[] image,
             int width,
@@ -273,6 +284,12 @@ public class Utils {
         ImageIO.write(bufferedImage, "PNG", file);
     }
 
+    /*
+     * Reads an image into a 2D Integer array, where each int represents an RGB pixel.
+     *
+     * @param filename      Image file name to read.
+     * @return              2D Integer array.
+     */
     public static int[][] readImage(String filename) {
         try {
             BufferedImage image = ImageIO.read(new File(filename));
