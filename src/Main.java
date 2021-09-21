@@ -218,7 +218,10 @@ public class Main {
                     if (i < 0 || i >= imageHeight) continue;
                     for (int j = cX - BRUSH_WIDTH; j <= cX + BRUSH_WIDTH; j++) {
                         if (j < 0 || j >= imageWidth) continue;
-                        carver[0].setEdge(j, i);
+                        // If left click, remove edge at given coordinate.
+                        // If right click, add edge.
+                        byte val = e.getButton() == MouseEvent.BUTTON1 ? (byte) 0 : (byte) 255;
+                        carver[0].setEdge(j, i, val);
                     }
                 }
             }

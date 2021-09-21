@@ -211,13 +211,14 @@ public class SeamCarver {
     }
 
     /*
-     * Sets the edge to the minimum value at the given coordinates.
+     * Sets the edge to the given value at the given coordinates.
      * 
      * @param x     X Coordinate in columns of image.
      * @param y     Y Coordinate in rows of image.
+     * @param val   Value to set at the given coordinate.
      */
-    public void setEdge(int x, int y) {
-        this.edges.get(y).set(x, (byte) 0);
+    public void setEdge(int x, int y, byte val) {
+        this.edges.get(y).set(x, val);
     }
 
     /*
