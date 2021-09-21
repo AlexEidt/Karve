@@ -116,12 +116,12 @@ public class Utils {
      * @param image     The image to edge.
      * @return          Sobel image.
      */
-    public static List<List<Byte>> sobel(int[][] image) {
+    public static List<List<Integer>> sobel(int[][] image) {
         int height = image.length + 2, width = image[0].length + 2;
         byte[][] gray = pad(grayscale(image), 1);
-        List<List<Byte>> result = new ArrayList<>(height);
+        List<List<Integer>> result = new ArrayList<>(height);
         for (int h = 1; h < height - 1; h++) {
-            List<Byte> row = new ArrayList<>(width);
+            List<Integer> row = new ArrayList<>(width);
             for (int w = 1; w < width - 1; w++) {
                 int sx = gray[h - 1][w - 1] -
                         gray[h - 1][w + 1] +
@@ -135,7 +135,7 @@ public class Utils {
                         gray[h + 1][w - 1] -
                         2 * gray[h + 1][w] -
                         gray[h + 1][w + 1];
-                row.add((byte) Math.sqrt(sx * sx + sy * sy));
+                row.add((int) Math.sqrt(sx * sx + sy * sy));
             }
             result.add(row);
         }

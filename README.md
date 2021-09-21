@@ -8,7 +8,7 @@
 
 With Karve you can carve out vertical and horizontal seams, and save your images as well!
 
-You can also click on the image itself to mark areas of lower importance. Any areas you left click on will be marked and seams will be removed there first. Any areas you right click on will be marked as higher priority and the algorithm should stay away from there, however in practice this doesn't seem to be as effective as marking areas to remove.
+You can also click on the image itself to mark areas of lower importance. Any areas you left click on will be marked and seams will be removed there first. Any areas you right click on will be marked as higher priority and the algorithm should stay away from there.
 
 <br />
 

@@ -21,7 +21,7 @@ public class Main {
     public static volatile boolean RECORDING = false;
     // The direction the carving animation plays. Removing -> False, Adding -> True.
     public static volatile boolean DIRECTION = false;
-    // Track frame numbers when recording.
+    // Track frame numbers when recording or taking snapshots.
     public static volatile int COUNT = 0;
     // Scaling factor for display image.
     public static volatile int SCALE = 1;
@@ -214,14 +214,14 @@ public class Main {
                 int cX = (int) (x * labelStepW + 0.5f);
                 int cY = (int) (y * labelStepH + 0.5f);
                 if (HORIZONTAL) { int temp = cX; cX = cY; cY = temp; }
-                for (int i = cY - BRUSH_WIDTH; i <= cY + BRUSH_WIDTH; i++) {
-                    if (i < 0 || i >= imageHeight) continue;
-                    for (int j = cX - BRUSH_WIDTH; j <= cX + BRUSH_WIDTH; j++) {
-                        if (j < 0 || j >= imageWidth) continue;
+                for (int row = cY - BRUSH_WIDTH; row <= cY + BRUSH_WIDTH; row++) {
+                    if (row < 0 || row >= imageHeight) continue;
+                    for (int col = cX - BRUSH_WIDTH; col <= cX + BRUSH_WIDTH; col++) {
+                        if (col < 0 || col >= imageWidth) continue;
                         // If left click, remove edge at given coordinate.
                         // If right click, add edge.
-                        byte val = e.getButton() == MouseEvent.BUTTON1 ? (byte) 0 : (byte) 255;
-                        carver[0].setEdge(j, i, val);
+                        int val = SwingUtilities.isLeftMouseButton(e) ? 0 : 255;
+                        carver[0].setEdge(col, row, val);
                     }
                 }
             }

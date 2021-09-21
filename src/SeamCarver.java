@@ -18,7 +18,7 @@ public class SeamCarver {
     // The indices of the values in these lists corresponds to those in "seams".
     private Stack<List<Integer>> values;
     // Stores the values of the seams that were removed from the internal gradient image.
-    private Stack<List<Byte>> edgeValues;
+    private Stack<List<Integer>> edgeValues;
     // The current image as a flattened array.
     private int[] data;
     // The actual image.
@@ -26,7 +26,7 @@ public class SeamCarver {
     // The energy map used to quickly compute new seams.
     private int[][] map;
     // The gradient of the input image (done via sobel).
-    private List<List<Byte>> edges;
+    private List<List<Integer>> edges;
     // Height of the image.
     private int height;
     // Width of the image.
@@ -114,7 +114,7 @@ public class SeamCarver {
         }
         List<Integer> path = this.seams.pop();
         List<Integer> values = this.values.pop();
-        List<Byte> edges = this.edgeValues.pop();
+        List<Integer> edges = this.edgeValues.pop();
 
         // Go through all indices of the most recently removed
         // seam and add the corresponding values back into the
@@ -168,7 +168,7 @@ public class SeamCarver {
         }
         List<Integer> path = new ArrayList<>(this.height);
         List<Integer> values = new ArrayList<>(this.height);
-        List<Byte> edgeValues = new ArrayList<>(this.height);
+        List<Integer> edgeValues = new ArrayList<>(this.height);
 
         // Find the minimum value in the first row of the energy map.
         int minIndex = Utils.minIndex(this.map[0]);
@@ -217,7 +217,7 @@ public class SeamCarver {
      * @param y     Y Coordinate in rows of image.
      * @param val   Value to set at the given coordinate.
      */
-    public void setEdge(int x, int y, byte val) {
+    public void setEdge(int x, int y, int val) {
         this.edges.get(y).set(x, val);
     }
 
@@ -234,7 +234,7 @@ public class SeamCarver {
         }
         // Create energy map.
         for (int h = this.height - 2; h >= 0; h--) {
-            List<Byte> row = this.edges.get(h);
+            List<Integer> row = this.edges.get(h);
             map[h][0] = row.get(0) + Utils.min(map[h + 1][0], map[h + 1][1]);
             int w;
             for (w = 1; w < this.width - 1; w++) {
