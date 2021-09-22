@@ -10,23 +10,23 @@ With Karve you can carve out vertical and horizontal seams, and save your images
 
 <br />
 
-<img src="Documentation/demo.gif" width=70% alt="Karve Seam Carver Demo" />
+<img src="Documentation/demo.gif" width=100% alt="Karve Seam Carver Demo" />
 
-<br /><br />
+<br />
 
 If Karve is carving out areas of the image that you want to keep, you can also mark the image with low and high priority regions.
 
 You can also click on the image itself to mark areas of lower importance. Any areas you left click on will be marked in red and seams will be removed there first.
 
-<img src="Documentation/demo-low-priority.gif" width=70% alt="Karve Seam Carver Demo Low Priority" />
+<img src="Documentation/demo-low-priority.gif" width=100% alt="Karve Seam Carver Demo Low Priority" />
 
 <br />
 
 Similarly, any areas you right click on will be marked in green and the algorithm will avoid those areas of the image.
 
-<img src="Documentation/demo-high-priority.gif" width=70% alt="Karve Seam Carver Demo" />
+<img src="Documentation/demo-high-priority.gif" width=100% alt="Karve Seam Carver Demo" />
 
-<br /><br />
+<br />
 
 # Files
 
