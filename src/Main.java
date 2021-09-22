@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 public class Main {
     // CARVING is a flag storing whether or not the carving animation is happening.
@@ -21,27 +22,27 @@ public class Main {
     public static volatile boolean RECORDING = false;
     // The direction the carving animation plays. Removing -> False, Adding -> True.
     public static volatile boolean DIRECTION = false;
+    // HIGHLIGHT is a flag that determines whether removed/added seams should be colored.
+    public static volatile boolean HIGHLIGHT = false;
+    // HORIZONTAL is a flag that determines whether horizontal or vertical seam carving happens.
+    public static volatile boolean HORIZONTAL = false;
     // Track frame numbers when recording or taking snapshots.
     public static volatile int COUNT = 0;
     // Scaling factor for display image.
     public static volatile int SCALE = 1;
     // Size of the button icons.
     public static final int ICON_SIZE = 30;
+    // File path to the Icons folder.
+    public static String ICONS_FOLDER = Utils.joinPath("Icons");
 
     // -------------------------------------------------------------------
     // USER SPECIFIED
     // -------------------------------------------------------------------
-    // HIGHLIGHT determines whether removed/added seams should be colored.
-    public static volatile boolean HIGHLIGHT = false;
-    // HORIZONTAL determines whether horizontal or vertical seam carving happens.
-    public static volatile boolean HORIZONTAL = false;
     // Determines the width of the "brush" used to remove edges by clicking on the image.
     public static volatile int BRUSH_WIDTH = 5;
     // The image file name to seam carve.
-    public static String FILENAME = "Documentation/starwars.png";
-    // File path to the Icons folder. MUST end with a slash or backslash.
-    public static String ICONS_FOLDER = "Icons/";
-    // Color of the seams (if HIGHLIGHT is true).
+    public static String FILENAME = Utils.joinPath("Documentation", "starwars.png");
+    // Color of the seams (if highlighting).
     public static final Color SEAM_COLOR = new Color(88, 150, 236);
 
     public static void main(String[] args) {

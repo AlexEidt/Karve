@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -240,6 +241,22 @@ public class Utils {
             }
         }
         return scale;
+    }
+
+    /*
+     * Joins the given list of files together to their full file path.
+     *
+     * @param files     List of files/directories in the file path.
+     * @return          The full file path to the given files.
+     */
+    public static String joinPath(String... files) {
+        String currentDir = Paths.get(System.getProperty("user.dir")).toString();
+        String filePath = Paths.get(currentDir, files).toString();
+        if (files.length > 0 && !files[files.length - 1].matches("\\.[A-Za-z\\d]+$")) {
+            filePath = Paths.get(filePath, "x").toString();
+            return filePath.substring(0, filePath.length() - 1);
+        }
+        return filePath;
     }
 
     /*
