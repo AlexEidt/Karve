@@ -45,18 +45,18 @@ public class Utils {
      * Grayscales the image.
      *
      * @param image     The image to grayscale. Each int represents an RGB pixel.
-     * @return          The grayscaled image. Each byte represents the grayscale value.
+     * @return          The grayscaled image. Each int represents the grayscale value.
      */
-    public static byte[][] grayscale(int[][] image) {
+    public static int[][] grayscale(int[][] image) {
         int height = image.length, width = image[0].length;
-        byte[][] gray = new byte[height][width];
+        int[][] gray = new int[height][width];
         for (int h = 0; h < height; h++) {
             for (int w = 0; w < width; w++) {
                 int pixel = image[h][w];
                 int r = (pixel << 16) & 0xFF;
                 int g = (pixel << 8) & 0xFF;
                 int b = pixel & 0xFF;
-                gray[h][w] = (byte) (0.299 * r + 0.587 * g + 0.114 * b);
+                gray[h][w] = (int) (0.299 * r + 0.587 * g + 0.114 * b);
             }
         }
         return gray;
@@ -83,14 +83,14 @@ public class Utils {
     /*
      * Edge pads an image.
      *
-     * @param image     The image to pad. Grayscaled images only.
+     * @param image     The image to pad.
      * @param pad       The width of the padding along with edges.
      * @return          The padded image.
      */
-    public static byte[][] pad(byte[][] image, int pad) {
+    public static int[][] pad(int[][] image, int pad) {
         int height = image.length, width = image[0].length;
         int pad2 = pad * 2;
-        byte[][] result = new byte[height + pad2][width + pad2];
+        int[][] result = new int[height + pad2][width + pad2];
 
         int h, w;
         for (h = pad; h < height + pad; h++) {
@@ -119,7 +119,7 @@ public class Utils {
      */
     public static List<List<Integer>> sobel(int[][] image) {
         int height = image.length + 2, width = image[0].length + 2;
-        byte[][] gray = pad(grayscale(image), 1);
+        int[][] gray = pad(grayscale(image), 1);
         List<List<Integer>> result = new ArrayList<>(height);
         for (int h = 1; h < height - 1; h++) {
             List<Integer> row = new ArrayList<>(width);
