@@ -107,6 +107,7 @@ public class Main {
         horizontal.addItemListener(e -> {
             HORIZONTAL = !HORIZONTAL;
             carver[0] = HORIZONTAL ? horizontalCarver : verticalCarver;
+            imageLabel.setIcon(getScaledImage(carver[0]));
         });
         checkBoxPanel.add(horizontal);
         // "Recording" checkbox.
@@ -201,29 +202,40 @@ public class Main {
         // Change pixels values of sobel image to change where seams appear.
         // Change pixels by clicking on the image.
         imageLabel.addMouseMotionListener(new MouseAdapter() {
-            private final int imageLabelWidth = imageLabel.getWidth();
-            private final int imageLabelHeight = imageLabel.getHeight();
-            private final int imageWidth = carver[0].getWidth();
-            private final int imageHeight = carver[0].getHeight();
-            private float labelStepW = (float) imageWidth / imageLabelWidth;
-            private float labelStepH = (float) imageHeight / imageLabelHeight;
             @Override
+            /*
+             * Activates whenever the user clicks and drags their mouse over any part
+             * of the display image. The coordinates the user click on are converted into
+             * pixel coordinates corresponding to the actual image. Depending on
+             * a left or right click the corresponding pixels are colored red or green
+             * to show areas of low or high priority.
+             */
             public void mouseDragged(MouseEvent e) {
-                float x = e.getX();
-                float y = e.getY();
-                int cX = (int) (x * labelStepW + 0.5f);
-                int cY = (int) (y * labelStepH + 0.5f);
-                if (HORIZONTAL) { int temp = cX; cX = cY; cY = temp; }
+                if (CARVING) return;
+                float x = e.getX(), y = e.getY();
+                int imageLabelWidth = imageLabel.getWidth(), imageLabelHeight = imageLabel.getHeight();
+                int imageWidth = carver[0].getWidth(), imageHeight = carver[0].getHeight();
+                // If horizontal, swap image width and height for calculations below.
+                if (HORIZONTAL) { int temp = imageWidth; imageWidth = imageHeight; imageHeight = temp; }
+                float labelStepW = (float) imageWidth / imageLabelWidth;
+                float labelStepH = (float) imageHeight / imageLabelHeight;
+                int cX = (int) (x * labelStepW + 0.5f); // X coordinate on actual image.
+                int cY = (int) (y * labelStepH + 0.5f); // Y coordinate on actual image.
+                if (HORIZONTAL) { int temp = cX; cX = cY; cY = temp; cY = imageWidth - cY; }
+                if (HORIZONTAL) { int temp = imageWidth; imageWidth = imageHeight; imageHeight = temp; }
+                int[] image = carver[0].getImage();
                 for (int row = cY - BRUSH_WIDTH; row <= cY + BRUSH_WIDTH; row++) {
                     if (row < 0 || row >= imageHeight) continue;
                     for (int col = cX - BRUSH_WIDTH; col <= cX + BRUSH_WIDTH; col++) {
                         if (col < 0 || col >= imageWidth) continue;
                         // If left click, remove edge at given coordinate.
                         // If right click, add edge.
-                        int val = SwingUtilities.isLeftMouseButton(e) ? 0 : 255;
-                        carver[0].setEdge(col, row, val);
+                        boolean isLeftClick = SwingUtilities.isLeftMouseButton(e);
+                        carver[0].setEdge(col, row, isLeftClick ? -500 : 500);
+                        image[row * imageWidth + col] = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
                     }
                 }
+                imageLabel.setIcon(getScaledImage(carver[0]));
             }
         });
 
