@@ -186,7 +186,9 @@ public class Main {
             if (valid) imageLabel.setIcon(getScaledImage(carver[0]));
         });
         // Create a snapshot of the current image when the "Snapshot" button is clicked.
-        snapshotButton.addActionListener(e -> captureSnapshot(carver[0]));
+        snapshotButton.addActionListener(e -> {
+            if (!RECORDING) captureSnapshot(carver[0]);
+        });
         buttonPanel.add(playButton);
         buttonPanel.add(addButton);
         buttonPanel.add(removeButton);

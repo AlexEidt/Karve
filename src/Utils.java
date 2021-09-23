@@ -287,6 +287,7 @@ public class Utils {
      * @param height        The height of the image.
      * @param horizontal    For use with horizontal seam carving.
      * @param filename      Image file name.
+     * @throws              IOException if the given image could not be created.
      */
     public static void writeImage(
             int[] image,
