@@ -211,6 +211,16 @@ public class SeamCarver {
     }
 
     /*
+     * Updates the "update" property, which determines if the display
+     * image should be updated when seams are added/removed.
+     *
+     * @param update    Value to set.
+     */
+    public void setUpdate(boolean update) {
+        this.update = update;
+    }
+
+    /*
      * Sets the edge to the given value at the given coordinates.
      * 
      * @param x     X Coordinate in columns of image.
@@ -219,6 +229,20 @@ public class SeamCarver {
      */
     public void setEdge(int x, int y, int val) {
         this.edges.get(y).set(x, val);
+    }
+
+    /*
+     * Updates the display image.
+     *
+     * @param highlight If true, highlight the added seam.
+     * @param color     The color of the highlighted seam.
+     */
+    public void updateImage(boolean highlight, int color) {
+        if (highlight && !this.seams.isEmpty()) {
+            this.updateImage(this.seams.peek(), color);
+        } else {
+            this.updateImage();
+        }
     }
 
     /*

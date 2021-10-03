@@ -6,20 +6,20 @@
  */
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 public class Main {
     // CARVING is a flag storing whether or not the carving animation is happening.
     public static volatile boolean CARVING = false;
     // RECORDING is a flag storing whether the carving is being recorded.
     public static volatile boolean RECORDING = false;
+    // Update is a flag storing whether the display image should be updated.
+    public static volatile boolean UPDATE = true;
     // The direction the carving animation plays. Removing -> False, Adding -> True.
     public static volatile boolean DIRECTION = false;
     // HIGHLIGHT is a flag that determines whether removed/added seams should be colored.
@@ -38,6 +38,8 @@ public class Main {
     // -------------------------------------------------------------------
     // USER SPECIFIED
     // -------------------------------------------------------------------
+    // Determines the range (0 - SLIDER) of values for the slider.
+    public static volatile int SLIDER = 1000;
     // Determines the width of the "brush" used to remove edges by clicking on the image.
     public static volatile int BRUSH_WIDTH = 5;
     // The image file name to seam carve.
@@ -62,7 +64,7 @@ public class Main {
         // The seam color.
         int highlightColor = SEAM_COLOR.getRGB();
 
-        JFrame frame = new JFrame("Karve");
+        JFrame frame = new JFrame("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -77,27 +79,30 @@ public class Main {
         JPanel menuPanel = new JPanel();
         Font font = new Font("Arial", Font.PLAIN, 15);
 
-        // Add the "Karve" title.
+        // Add the "Karve" logo.
         JPanel titlePanel = new JPanel();
-        JLabel title = new JLabel("Karve", JLabel.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 30));
+        JLabel title = new JLabel(buttonIcon(ICONS_FOLDER + "logo.png", ICON_SIZE * 3 / 4), JLabel.CENTER);
         titlePanel.add(title);
         menuPanel.add(titlePanel);
 
         // Add the slider.
-        JPanel sliderPanel = new JPanel(new GridLayout(2, 1));
-        JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 1000, 500);
+        JPanel sliderPanel = new JPanel();
+        JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, SLIDER, SLIDER / 2);
         slider.setFocusable(false);
-        JLabel speed = new JLabel("Speed", JLabel.CENTER);
-        speed.setBorder(new EmptyBorder(10, 10, 10, 10));
-        speed.setFont(font);
-        sliderPanel.add(speed);
+        ImageIcon[] speeds = new ImageIcon[]{
+                buttonIcon(ICONS_FOLDER + "speed1.png"),
+                buttonIcon(ICONS_FOLDER + "speed2.png"),
+                buttonIcon(ICONS_FOLDER + "speed3.png")
+        };
+        JLabel speedometer = new JLabel(speeds[1], JLabel.CENTER);
+        slider.addChangeListener(e -> speedometer.setIcon(speeds[slider.getValue() / (SLIDER / 3 + 1)]));
+        sliderPanel.add(speedometer);
         sliderPanel.add(slider);
         menuPanel.add(sliderPanel);
 
         // Add the checkboxes for "Show Seams", "Horizontal", and "Record".
         // "Show Seams" checkbox.
-        JPanel checkBoxPanel = new JPanel(new GridLayout());
+        JPanel checkBoxPanel = new JPanel(new GridLayout(2, 2));
         JCheckBox highlight = new JCheckBox("Show Seams");
         highlight.setFont(font);
         highlight.addItemListener(e -> HIGHLIGHT = !HIGHLIGHT);
@@ -108,7 +113,8 @@ public class Main {
         horizontal.addItemListener(e -> {
             HORIZONTAL = !HORIZONTAL;
             carver[0] = HORIZONTAL ? horizontalCarver : verticalCarver;
-            imageLabel.setIcon(getScaledImage(carver[0]));
+            if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
+            frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
         });
         checkBoxPanel.add(horizontal);
         // "Recording" checkbox.
@@ -116,16 +122,32 @@ public class Main {
         recording.setFont(font);
         recording.addItemListener(e -> RECORDING = !RECORDING);
         checkBoxPanel.add(recording);
+        // "Update" checkbox.
+        JCheckBox update = new JCheckBox("Update");
+        update.setSelected(true);
+        update.setFont(font);
+        update.addItemListener(e -> {
+            UPDATE = !UPDATE;
+            carver[0].updateImage(HIGHLIGHT, highlightColor);
+            if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
+            carver[0].setUpdate(UPDATE);
+        });
+        checkBoxPanel.add(update);
+
         menuPanel.add(checkBoxPanel);
 
         // Add all "Pause/Play", "Add", "Remove" and "Snapshot" buttons.
         JPanel buttonPanel = new JPanel(new GridLayout(4, 1));
         ImageIcon play = buttonIcon(ICONS_FOLDER + "play.png");
         ImageIcon pause = buttonIcon(ICONS_FOLDER + "pause.png");
-        JButton playButton = new JButton(play);
-        JButton addButton = new JButton(buttonIcon(ICONS_FOLDER + "add.png"));
-        JButton removeButton = new JButton(buttonIcon(ICONS_FOLDER + "remove.png"));
-        JButton snapshotButton = new JButton(buttonIcon(ICONS_FOLDER + "snapshot.png"));
+        JButton playButton = new JButton("Animate Seams");
+        playButton.setIcon(play);
+        JButton addButton = new JButton("Add Seam");
+        addButton.setIcon(buttonIcon(ICONS_FOLDER + "add.png"));
+        JButton removeButton = new JButton("Remove Seam");
+        removeButton.setIcon(buttonIcon(ICONS_FOLDER + "remove.png"));
+        JButton snapshotButton = new JButton("Snapshot");
+        snapshotButton.setIcon(buttonIcon(ICONS_FOLDER + "snapshot.png"));
 
         // Function to run in separate thread when the "Play" button is pressed.
         Runnable animate = () -> {
@@ -136,24 +158,28 @@ public class Main {
                 if (DIRECTION) {
                     while (CARVING && carver[0].add(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
-                        imageLabel.setIcon(getScaledImage(carver[0]));
-                        Utils.delay(slider.getValue());
+                        if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
+                        frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
+                        Utils.delay(SLIDER - slider.getValue());
                     }
                     while (CARVING && carver[0].remove(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
-                        imageLabel.setIcon(getScaledImage(carver[0]));
-                        Utils.delay(slider.getValue());
+                        if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
+                        frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
+                        Utils.delay(SLIDER - slider.getValue());
                     }
                 } else {
                     while (CARVING && carver[0].remove(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
-                        imageLabel.setIcon(getScaledImage(carver[0]));
-                        Utils.delay(slider.getValue());
+                        if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
+                        frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
+                        Utils.delay(SLIDER - slider.getValue());
                     }
                     while (CARVING && carver[0].add(HIGHLIGHT, highlightColor)) {
                         if (RECORDING) captureSnapshot(carver[0]);
-                        imageLabel.setIcon(getScaledImage(carver[0]));
-                        Utils.delay(slider.getValue());
+                        if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
+                        frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
+                        Utils.delay(SLIDER - slider.getValue());
                     }
                 }
             }
@@ -164,6 +190,7 @@ public class Main {
         playButton.addActionListener(e -> {
             addButton.setEnabled(CARVING);
             removeButton.setEnabled(CARVING);
+            update.setEnabled(CARVING);
             CARVING = !CARVING;
             if (CARVING) {
                 playButton.setIcon(pause);
@@ -177,13 +204,19 @@ public class Main {
         addButton.addActionListener(e -> {
             DIRECTION = true;
             boolean valid = carver[0].add(HIGHLIGHT, highlightColor);
-            if (valid) imageLabel.setIcon(getScaledImage(carver[0]));
+            if (valid) {
+                if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
+                frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
+            };
         });
         // Remove seam when "Remove" button is clicked.
         removeButton.addActionListener(e -> {
             DIRECTION = false;
             boolean valid = carver[0].remove(HIGHLIGHT, highlightColor);
-            if (valid) imageLabel.setIcon(getScaledImage(carver[0]));
+            if (valid) {
+                if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
+                frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
+            };
         });
         // Create a snapshot of the current image when the "Snapshot" button is clicked.
         snapshotButton.addActionListener(e -> {
@@ -214,7 +247,7 @@ public class Main {
              * to show areas of low or high priority.
              */
             public void mouseDragged(MouseEvent e) {
-                if (CARVING) return;
+                if (CARVING || !UPDATE) return;
                 float x = e.getX(), y = e.getY();
                 int imageLabelWidth = imageLabel.getWidth(), imageLabelHeight = imageLabel.getHeight();
                 int imageWidth = carver[0].getWidth(), imageHeight = carver[0].getHeight();
@@ -290,13 +323,23 @@ public class Main {
     }
 
     /*
-     * Creates Image Icons for the buttons used in the User Interface.
+     * Creates Image Icons for components used in the User Interface.
      *
      * @param filename  The filename/path of the Icon to use.
-     * @return          An ImageIcon scaled to "ICON_SIZE" for use on the button.
+     * @param dims      The scaling factors to use to resize the Icon.
+     * @return          An ImageIcon scaled to the given dimensions.
      */
-    public static ImageIcon buttonIcon(String filename) {
-        Image icon = new ImageIcon(filename).getImage();
-        return new ImageIcon(icon.getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_DEFAULT));
+    public static ImageIcon buttonIcon(String filename, int... dims) {
+        ImageIcon icon = new ImageIcon(filename);
+        int width, height;
+        switch (dims.length) {
+            case 0:
+                width = height = ICON_SIZE;
+                break;
+            default:
+                width = icon.getIconWidth() / dims[0];
+                height = icon.getIconHeight() / dims[0];
+        }
+        return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
     }
 }
