@@ -205,6 +205,7 @@ public class Main {
             DIRECTION = true;
             boolean valid = carver[0].add(HIGHLIGHT, highlightColor);
             if (valid) {
+                if (RECORDING) captureSnapshot(carver[0]);
                 if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
                 frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
             };
@@ -214,6 +215,7 @@ public class Main {
             DIRECTION = false;
             boolean valid = carver[0].remove(HIGHLIGHT, highlightColor);
             if (valid) {
+                if (RECORDING) captureSnapshot(carver[0]);
                 if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
                 frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
             };
