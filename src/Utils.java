@@ -27,7 +27,7 @@ public class Utils {
     }
 
     /*
-     * Converts and integer array representing pixels to a BufferedImage, which is needed
+     * Converts an integer array representing pixels to a BufferedImage, which is needed
      * to display the image on the User Interface.
      *
      * @param image     The flattened image. Each int represents an RGB pixel.
@@ -66,12 +66,13 @@ public class Utils {
      * Find the index of the minimum value in "data".
      *
      * @param data      The input array to find the minimum index of.
+     * @param size      The actual size of "data".
      * @return          An integer representing the index of the minimum value in "data".
      */
-    public static int minIndex(int[] data) {
+    public static int minIndex(int[] data, int size) {
         int index = 0;
         int min = data[0];
-        for (int i = 1; i < data.length; i++) {
+        for (int i = 1; i < size; i++) {
             if (data[i] < min) {
                 min = data[i];
                 index = i;

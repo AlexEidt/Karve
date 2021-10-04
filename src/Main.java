@@ -95,7 +95,7 @@ public class Main {
                 buttonIcon(ICONS_FOLDER + "speed3.png")
         };
         JLabel speedometer = new JLabel(speeds[1], JLabel.CENTER);
-        slider.addChangeListener(e -> speedometer.setIcon(speeds[slider.getValue() / (SLIDER / 3 + 1)]));
+        slider.addChangeListener(e -> speedometer.setIcon(speeds[slider.getValue() / (SLIDER / speeds.length + 1)]));
         sliderPanel.add(speedometer);
         sliderPanel.add(slider);
         menuPanel.add(sliderPanel);
@@ -283,7 +283,7 @@ public class Main {
     /*
      * Scales the image being carved.
      *
-     * @param carver:   The SeamCarver being used to carve the image.
+     * @param carver    The SeamCarver being used to carve the image.
      * @return          An ImageIcon representing the scaled image.
      */
     public static ImageIcon getScaledImage(SeamCarver carver) {
@@ -332,13 +332,11 @@ public class Main {
     public static ImageIcon buttonIcon(String filename, int... dims) {
         ImageIcon icon = new ImageIcon(filename);
         int width, height;
-        switch (dims.length) {
-            case 0:
-                width = height = ICON_SIZE;
-                break;
-            default:
-                width = icon.getIconWidth() / dims[0];
-                height = icon.getIconHeight() / dims[0];
+        if (dims.length == 0) {
+            width = height = ICON_SIZE;
+        } else {
+            width = icon.getIconWidth() / dims[0];
+            height = icon.getIconHeight() / dims[0];
         }
         return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
     }

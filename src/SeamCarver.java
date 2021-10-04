@@ -12,6 +12,12 @@ import java.util.*;
  */
 public class SeamCarver {
 
+    // Height of the image.
+    private int height;
+    // Width of the image.
+    private int width;
+    // Prevents a new image to be written to the "data" field every time a seam is removed.
+    private boolean update;
     // Stores the indices of the seams that were removed from the image.
     private Stack<List<Integer>> seams;
     // Stores the values of the seams that were removed from the image.
@@ -19,22 +25,14 @@ public class SeamCarver {
     private Stack<List<Integer>> values;
     // Stores the values of the seams that were removed from the internal gradient image.
     private Stack<List<Integer>> edgeValues;
-    // The current image as a flattened array.
-    private int[] data;
-    // The actual image.
-    private List<List<Integer>> image;
-    // The energy map used to quickly compute new seams.
-    private int[][] map;
     // The gradient of the input image (done via sobel).
     private List<List<Integer>> edges;
-    // Height of the image.
-    private int height;
-    // Width of the image.
-    private int width;
-    // If the Seam Carver is being used without a UI, update is used to make the resizing
-    // faster by preventing a new image to be written to the "data" field every time a seam
-    // is removed.
-    private boolean update;
+    // The actual image.
+    private List<List<Integer>> image;
+    // The current image as a flattened array.
+    private int[] data;
+    // The energy map used to quickly compute new seams.
+    private int[][] map;
 
     // Constructor which takes in a filename of the image to be carved.
     public SeamCarver(String filename) {
@@ -49,9 +47,10 @@ public class SeamCarver {
         this.seams = new Stack<>();
         this.values = new Stack<>();
         this.edgeValues = new Stack<>();
-        this.image = new ArrayList<>(this.height);
         this.edges = Utils.sobel(image);
+        this.image = new ArrayList<>(this.height);
         this.data = new int[this.height * this.width];
+        this.map = new int[this.height][this.width];
 
         this.energyMap(); // Create Energy Map.
         // Copy the "image" into "this.image" and "this.data".
@@ -171,7 +170,7 @@ public class SeamCarver {
         List<Integer> edgeValues = new ArrayList<>(this.height);
 
         // Find the minimum value in the first row of the energy map.
-        int minIndex = Utils.minIndex(this.map[0]);
+        int minIndex = Utils.minIndex(this.map[0], this.width);
         path.add(minIndex);
         values.add(this.image.get(0).remove(minIndex));
         edgeValues.add(this.edges.get(0).remove(minIndex));
@@ -251,22 +250,21 @@ public class SeamCarver {
      */
     private void energyMap() {
         // Create Energy Map to find least paths through the image.
-        int[][] map = new int[this.height][this.width];
         // Copy last row of image into energy map.
         for (int w = 0; w < this.width; w++) {
-            map[this.height - 1][w] = this.edges.get(this.height - 1).get(w);
+            this.map[this.height - 1][w] = this.edges.get(this.height - 1).get(w);
         }
         // Create energy map.
         for (int h = this.height - 2; h >= 0; h--) {
             List<Integer> row = this.edges.get(h);
-            map[h][0] = row.get(0) + Utils.min(map[h + 1][0], map[h + 1][1]);
+            this.map[h][0] = row.get(0) + Utils.min(this.map[h + 1][0], this.map[h + 1][1]);
             int w;
             for (w = 1; w < this.width - 1; w++) {
-                map[h][w] = row.get(w) + Utils.min(map[h + 1][w - 1], map[h + 1][w], map[h + 1][w + 1]);
+                this.map[h][w] = row.get(w) +
+                        Utils.min(this.map[h + 1][w - 1], this.map[h + 1][w], this.map[h + 1][w + 1]);
             }
-            map[h][w] = row.get(w) + Utils.min(map[h + 1][w - 1], map[h + 1][w]);
+            this.map[h][w] = row.get(w) + Utils.min(this.map[h + 1][w - 1], this.map[h + 1][w]);
         }
-        this.map = map;
     }
 
     // Updates the current flattened image to match the current state of the image.
