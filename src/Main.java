@@ -208,7 +208,7 @@ public class Main {
                 if (RECORDING) captureSnapshot(carver[0]);
                 if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
                 frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
-            };
+            }
         });
         // Remove seam when "Remove" button is clicked.
         removeButton.addActionListener(e -> {
@@ -218,7 +218,7 @@ public class Main {
                 if (RECORDING) captureSnapshot(carver[0]);
                 if (UPDATE) imageLabel.setIcon(getScaledImage(carver[0]));
                 frame.setTitle("Karve - " + carver[0].getWidth() + " x " + carver[0].getHeight());
-            };
+            }
         });
         // Create a snapshot of the current image when the "Snapshot" button is clicked.
         snapshotButton.addActionListener(e -> {
