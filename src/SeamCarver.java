@@ -108,9 +108,8 @@ public class SeamCarver {
      * @return          true if seam could be added, false otherwise.
      */
     public boolean add(boolean highlight, int color) {
-        if (this.seams.isEmpty()) {
-            return false;
-        }
+        if (this.seams.isEmpty()) return false;
+
         List<Integer> path = this.seams.pop();
         List<Integer> values = this.values.pop();
         List<Integer> edges = this.edgeValues.pop();
@@ -162,9 +161,8 @@ public class SeamCarver {
      * @return          true if seam could be removed, false otherwise.
      */
     public boolean remove(boolean highlight, int color) {
-        if (this.width == 2) {
-            return false;
-        }
+        if (this.width == 2) return false;
+
         List<Integer> path = new ArrayList<>(this.height);
         List<Integer> values = new ArrayList<>(this.height);
         List<Integer> edgeValues = new ArrayList<>(this.height);
