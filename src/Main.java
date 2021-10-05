@@ -269,7 +269,7 @@ public class Main {
                         // If left click, remove edge at given coordinate.
                         // If right click, add edge.
                         boolean isLeftClick = SwingUtilities.isLeftMouseButton(e);
-                        carver[0].setEdge(col, row, isLeftClick ? -500 : 500);
+                        carver[0].setEdge(col, row, isLeftClick ? 0 : 255);
                         image[row * imageWidth + col] = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
                     }
                 }
