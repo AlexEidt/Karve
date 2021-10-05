@@ -269,15 +269,13 @@ public class SeamCarver {
 
     // Updates the current flattened image to match the current state of the image.
     private void updateImage() {
-        int[] data = new int[this.height * this.width];
         int index = 0;
         for (int h = 0; h < this.height; h++) {
             List<Integer> row = this.image.get(h);
             for (int w = 0; w < this.width; w++) {
-                data[index++] = row.get(w);
+                this.data[index++] = row.get(w);
             }
         }
-        this.data = data;
     }
 
     /*
@@ -288,19 +286,17 @@ public class SeamCarver {
      * @param color     The seam color to use.
      */
     private void updateImage(List<Integer> path, int color) {
-        int[] data = new int[this.height * this.width];
         int index = 0;
         for (int h = 0; h < this.height; h++) {
             List<Integer> row = this.image.get(h);
             for (int w = 0; w < this.width; w++) {
-                data[index++] = row.get(w);
+                this.data[index++] = row.get(w);
             }
             int pathIndex = path.get(h);
             for (int i = pathIndex - 1; i <= pathIndex + 1; i++) {
                 if (i < 0 || i >= this.width) continue;
-                data[h * this.width + i] = color;
+                this.data[h * this.width + i] = color;
             }
         }
-        this.data = data;
     }
 }
