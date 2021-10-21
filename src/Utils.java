@@ -200,7 +200,8 @@ public class Utils {
             Utils.writeImage(
                     carver.getImage(), carver.getWidth(), carver.getHeight(),
                     horizontal,
-                    filename);
+                    filename
+            );
         } catch (IOException ioException) {
             System.out.println("Failed to create Snapshot Image.");
             ioException.printStackTrace();

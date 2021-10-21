@@ -56,7 +56,8 @@ public class Main {
         // Create Seam Carver for horizontal Seam Carving by mirroring and then
         // transposing the image.
         SeamCarver horizontalCarver = new SeamCarver(
-                Utils.transpose(Utils.mirror(Utils.readImage(FILENAME))));
+                Utils.transpose(Utils.mirror(Utils.readImage(FILENAME)))
+        );
         SeamCarver[] carver = {verticalCarver};
 
         SCALE = Utils.getDimensions(carver[0].getWidth(), carver[0].getHeight());
@@ -302,7 +303,8 @@ public class Main {
         displayIcon = displayIcon.getScaledInstance(
                 Math.max(width / SCALE, 1),
                 Math.max(height / SCALE, 1),
-                Image.SCALE_SMOOTH);
+                Image.SCALE_SMOOTH
+        );
         return new ImageIcon(displayIcon);
     }
 
@@ -317,7 +319,8 @@ public class Main {
             Utils.writeImage(
                     carver.getImage(), carver.getWidth(), carver.getHeight(),
                     HORIZONTAL,
-                    "Snapshots/Snapshot" + COUNT++ + ".png");
+                    "Snapshots/Snapshot" + COUNT++ + ".png"
+            );
         } catch (IOException ioException) {
             System.out.println("Failed to create Snapshot Image.");
             ioException.printStackTrace();
