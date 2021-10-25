@@ -252,12 +252,11 @@ public class Main {
             public void mouseDragged(MouseEvent e) {
                 if (CARVING || !UPDATE) return;
                 float x = e.getX(), y = e.getY();
-                int imageLabelWidth = imageLabel.getWidth(), imageLabelHeight = imageLabel.getHeight();
                 int imageWidth = carver[0].getWidth(), imageHeight = carver[0].getHeight();
                 // If horizontal, swap image width and height for calculations below.
                 if (HORIZONTAL) { int temp = imageWidth; imageWidth = imageHeight; imageHeight = temp; }
-                float labelStepW = (float) imageWidth / imageLabelWidth;
-                float labelStepH = (float) imageHeight / imageLabelHeight;
+                float labelStepW = (float) imageWidth / imageLabel.getWidth();
+                float labelStepH = (float) imageHeight / imageLabel.getHeight();
                 int cX = (int) (x * labelStepW + 0.5f); // X coordinate on actual image.
                 int cY = (int) (y * labelStepH + 0.5f); // Y coordinate on actual image.
                 if (HORIZONTAL) { int temp = cX; cX = cY; cY = temp; cY = imageWidth - cY; }
@@ -317,7 +316,9 @@ public class Main {
     public static void captureSnapshot(SeamCarver carver) {
         try {
             Utils.writeImage(
-                    carver.getImage(), carver.getWidth(), carver.getHeight(),
+                    carver.getImage(),
+                    carver.getWidth(),
+                    carver.getHeight(),
                     HORIZONTAL,
                     "Snapshots/Snapshot" + COUNT++ + ".png"
             );

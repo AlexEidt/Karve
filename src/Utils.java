@@ -198,7 +198,9 @@ public class Utils {
     public static void captureSnapshot(SeamCarver carver, String filename, boolean horizontal) {
         try {
             Utils.writeImage(
-                    carver.getImage(), carver.getWidth(), carver.getHeight(),
+                    carver.getImage(),
+                    carver.getWidth(),
+                    carver.getHeight(),
                     horizontal,
                     filename
             );
