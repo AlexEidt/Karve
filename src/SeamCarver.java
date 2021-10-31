@@ -19,12 +19,12 @@ public class SeamCarver {
     // Prevents a new image to be written to the "data" field every time a seam is removed.
     private boolean update;
     // Stores the indices of the seams that were removed from the image.
-    private Stack<List<Integer>> seams;
+    private Stack<int[]> seams;
     // Stores the values of the seams that were removed from the image.
     // The indices of the values in these lists corresponds to those in "seams".
-    private Stack<List<Integer>> values;
+    private Stack<int[]> values;
     // Stores the values of the seams that were removed from the internal gradient image.
-    private Stack<List<Integer>> edgeValues;
+    private Stack<int[]> edgeValues;
     // The gradient of the input image (done via sobel).
     private List<List<Integer>> edges;
     // The actual image.
@@ -52,7 +52,7 @@ public class SeamCarver {
         this.data = new int[this.height * this.width];
         this.map = new int[this.height][this.width];
 
-        this.energyMap(); // Create Energy Map.
+        this.energyMap(); // Fill in Energy Map.
         // Copy the "image" into "this.image" and "this.data".
         int index = 0;
         for (int h = 0; h < this.height; h++) {
@@ -110,16 +110,16 @@ public class SeamCarver {
     public boolean add(boolean highlight, int color) {
         if (this.seams.isEmpty()) return false;
 
-        List<Integer> path = this.seams.pop();
-        List<Integer> values = this.values.pop();
-        List<Integer> edges = this.edgeValues.pop();
+        int[] path = this.seams.pop();
+        int[] values = this.values.pop();
+        int[] edges = this.edgeValues.pop();
 
         // Go through all indices of the most recently removed
         // seam and add the corresponding values back into the
         // images.
-        for (int i = 0; i < path.size(); i++) {
-            this.image.get(i).add(path.get(i), values.get(i));
-            this.edges.get(i).add(path.get(i), edges.get(i));
+        for (int i = 0; i < path.length; i++) {
+            this.image.get(i).add(path[i], values[i]);
+            this.edges.get(i).add(path[i], edges[i]);
         }
         this.width += 1;
         if (this.update) {
@@ -163,15 +163,15 @@ public class SeamCarver {
     public boolean remove(boolean highlight, int color) {
         if (this.width == 2) return false;
 
-        List<Integer> path = new ArrayList<>(this.height);
-        List<Integer> values = new ArrayList<>(this.height);
-        List<Integer> edgeValues = new ArrayList<>(this.height);
+        int[] path = new int[this.height];
+        int[] values = new int[this.height];
+        int[] edgeValues = new int[this.height];
 
         // Find the minimum value in the first row of the energy map.
         int minIndex = Utils.minIndex(this.map[0], this.width);
-        path.add(minIndex);
-        values.add(this.image.get(0).remove(minIndex));
-        edgeValues.add(this.edges.get(0).remove(minIndex));
+        path[0] = minIndex;
+        values[0] = this.image.get(0).remove(minIndex);
+        edgeValues[0] = this.edges.get(0).remove(minIndex);
         // After finding the minimum value in the first row of the energy
         // map, move through all rows of the image to find a seam. Seams must
         // be connected, therefore only the three pixels directly below the current
@@ -188,9 +188,9 @@ public class SeamCarver {
                 if (row[minIndex - 1] == minValue) minIndex = minIndex - 1;
                 else if (row[minIndex + 1] == minValue) minIndex = minIndex + 1;
             }
-            path.add(minIndex);
-            values.add(this.image.get(h).remove(minIndex));
-            edgeValues.add(this.edges.get(h).remove(minIndex));
+            path[h] = minIndex;
+            values[h] = this.image.get(h).remove(minIndex);
+            edgeValues[h] = this.edges.get(h).remove(minIndex);
         }
         this.width -= 1;
         if (this.update) {
@@ -280,17 +280,17 @@ public class SeamCarver {
      * Updates the current flattened image to match the current state of the image.
      * Adds the highlighted seam to the flattened image as well.
      *
-     * @param path      List of indices of each seam value.
+     * @param path      Array of indices of each seam value.
      * @param color     The seam color to use.
      */
-    private void updateImage(List<Integer> path, int color) {
+    private void updateImage(int[] path, int color) {
         int index = 0;
         for (int h = 0; h < this.height; h++) {
             List<Integer> row = this.image.get(h);
             for (int w = 0; w < this.width; w++) {
                 this.data[index++] = row.get(w);
             }
-            int pathIndex = path.get(h);
+            int pathIndex = path[h];
             for (int i = pathIndex - 1; i <= pathIndex + 1; i++) {
                 if (i < 0 || i >= this.width) continue;
                 this.data[h * this.width + i] = color;
