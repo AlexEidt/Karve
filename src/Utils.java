@@ -148,7 +148,7 @@ public class Utils {
      * Transposes the given image.
      * The transposition is cache-oblivious.
      *
-     * @param image     The image to tranpose.
+     * @param image     The image to transpose.
      * @return          The transposed image.
      */
     public static int[][] transpose(int[][] image) {
@@ -170,7 +170,7 @@ public class Utils {
     }
 
     /*
-     * Mirros the image along the vertical axis.
+     * Mirrors the image along the vertical axis.
      *
      * @param image     Image to mirror.
      * @return          The mirrored image.
