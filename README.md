@@ -8,6 +8,8 @@
 
 With Karve you can carve out vertical and horizontal seams, and save your images as well!
 
+To start, simply drag and drop the image into the application.
+
 <br />
 
 <img src="Documentation/demo.gif" width=100% alt="Karve Seam Carver Demo" />
@@ -33,7 +35,8 @@ Similarly, any areas you right click on will be marked in green and the algorith
 File | Description
 --- | ---
 `Console.java` | Runs the Seam Carver from the console. For those interested in carving a certain number of seams from an image without the user interface.
-`Main.java` | Runs the Graphical User Interface (GUI) window that allows the user to interface with the Karver.
+`GUI.java` | Runs the Graphical User Interface (GUI) window that allows the user to interface with the Karver.
+`Main.java` | Runs the application.
 `SeamCarver.java` | Standalone Seam Carver class.
 `Utils.java` |  Contains a collection of useful (and unrelated) functions for the Seam Carver.
 

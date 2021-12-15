@@ -23,6 +23,11 @@ public class Utils {
 
     // Returns the minimum of "a" and "b".
     public static int min(int a, int b) {
+        return a < b ? a : b;
+    }
+
+    // Returns the maximum of "a" and "b".
+    public static int max(int a, int b) {
         return a > b ? a : b;
     }
 
@@ -309,12 +314,16 @@ public class Utils {
     /*
      * Reads an image into a 2D Integer array, where each int represents an RGB pixel.
      *
-     * @param filename      Image file name to read.
+     * @param filename      Image file to read.
      * @return              2D Integer array.
      */
     public static int[][] readImage(String filename) {
+        return readImage(new File(filename));
+    }
+
+    public static int[][] readImage(File file) {
         try {
-            BufferedImage image = ImageIO.read(new File(filename));
+            BufferedImage image = ImageIO.read(file);
             int width = image.getWidth();
             int height = image.getHeight();
             int[][] pixels = new int[height][width];
@@ -325,7 +334,7 @@ public class Utils {
             }
             return pixels;
         } catch (IOException e) {
-            System.out.println("Error opening " + filename);
+            System.out.println("Error opening " + file.getName());
             System.out.println(e.getMessage());
             System.exit(1);
             return null;

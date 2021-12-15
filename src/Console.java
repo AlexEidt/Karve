@@ -5,7 +5,6 @@
  * of seams from an image without the user interface.
  */
 
-import java.awt.*;
 import java.io.File;
 import java.util.Locale;
 import java.util.Scanner;

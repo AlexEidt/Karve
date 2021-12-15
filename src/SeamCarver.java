@@ -4,6 +4,7 @@
  * Implements the SeamCarver class.
  */
 
+import java.io.File;
 import java.util.*;
 
 /*
@@ -34,7 +35,10 @@ public class SeamCarver {
     // The energy map used to quickly compute new seams.
     private int[][] map;
 
-    // Constructor which takes in a filename of the image to be carved.
+    // Constructor which takes in a filename (or file) of the image to be carved.
+    public SeamCarver(File file) {
+        this(Utils.readImage(file));
+    }
     public SeamCarver(String filename) {
         this(Utils.readImage(filename));
     }
