@@ -1,5 +1,5 @@
 /*
- * Main
+ * GUI
  * Alex Eidt
  * Runs the Graphical User Interface (GUI) window that allows the user
  * to interface with the Karver.
