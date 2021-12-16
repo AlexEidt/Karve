@@ -68,8 +68,8 @@ public class GUI {
                 JLabel.CENTER
         );
         this.displayImage.setPreferredSize(new Dimension(
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2
+            SCREEN_WIDTH / 4,
+            SCREEN_HEIGHT / 4
         ));
         panel.add(this.displayImage);
 
