@@ -280,12 +280,12 @@ public class GUI {
      * https://stackoverflow.com/questions/811248/how-can-i-use-drag-and-drop-in-swing-to-get-file-path
      *
      * @param frame     The current window frame. Used to update the title.
+     * @param menuPanel The menuPanel to enable once the user drops in an image.
      */
     private void addDropTarget(JFrame frame, JPanel menuPanel) {
         this.displayImage.setDropTarget(new DropTarget() {
             public synchronized void drop(DropTargetDropEvent evt) {
                 try {
-                    setEnabled(menuPanel, true);
                     evt.acceptDrop(DnDConstants.ACTION_COPY);
                     List<File> droppedFiles = (List) evt
                                     .getTransferable()
@@ -306,6 +306,7 @@ public class GUI {
                     displayImage.setPreferredSize(new Dimension(image.getIconWidth(), image.getIconHeight()));
                     displayImage.setIcon(image);
 
+                    setEnabled(menuPanel, true);
                     frame.pack();
 
                     evt.dropComplete(true);
