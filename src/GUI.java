@@ -401,7 +401,7 @@ public class GUI {
                     carver.getWidth(),
                     carver.getHeight(),
                     this.horizontal,
-                    "Snapshots/Snapshot" + this.count++ + ".png"
+                    Utils.joinPath(Main.SNAPSHOTS_DIR, "Snapshot" + this.count++ + ".png")
             );
         } catch (IOException ioException) {
             System.out.println("Failed to create Snapshot Image.");
