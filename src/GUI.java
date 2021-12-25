@@ -285,6 +285,7 @@ public class GUI {
     private void addDropTarget(JFrame frame, JPanel menuPanel) {
         this.displayImage.setDropTarget(new DropTarget() {
             public synchronized void drop(DropTargetDropEvent evt) {
+                if (carving) return;
                 try {
                     evt.acceptDrop(DnDConstants.ACTION_COPY);
                     List<File> droppedFiles = (List) evt
