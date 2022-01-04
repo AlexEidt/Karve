@@ -2,6 +2,7 @@
 /.idea
 /out
 /Snapshots
+/src/META-INF
 
 # Files
 *.iml
