@@ -61,7 +61,7 @@ public class Utils {
                 int r = (pixel >> 16) & 0xFF;
                 int g = (pixel >> 8) & 0xFF;
                 int b = pixel & 0xFF;
-                gray[h][w] = (int) (0.299 * r + 0.587 * g + 0.114 * b);
+                gray[h][w] = (3 * r + 4 * g + b) / 8;
             }
         }
         return gray;
@@ -142,7 +142,7 @@ public class Utils {
                         gray[h + 1][w - 1] -
                         2 * gray[h + 1][w] -
                         gray[h + 1][w + 1];
-                row.add((int) Math.sqrt(sx * sx + sy * sy));
+                row.add(Math.abs(sx) + Math.abs(sy));
             }
             result.add(row);
         }

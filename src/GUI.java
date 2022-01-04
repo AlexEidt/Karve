@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 public class GUI {
@@ -23,15 +24,15 @@ public class GUI {
     public static int SCREEN_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     // Determines the range (0 - SLIDER) of values for the slider.
     public static volatile int SLIDER = 1000;
-    // Determines the width of the "brush" used to remove edges by clicking on the image.
-    public static volatile int BRUSH_WIDTH = 5;
     // Color of the seams (if highlighting).
     public static final int SEAM_COLOR = new Color(88, 150, 236).getRGB();
+    // File path to the Icons folder.
+    public static String ICONS_FOLDER = "Icons";
     // Size of the button icons.
     public static final int ICON_SIZE = 30;
-    // File path to the Icons folder.
-    public static String ICONS_FOLDER = Utils.joinPath("Icons");
 
+    // Determines the width of the "brush" used to mark the priority mask by clicking on the image.
+    private int brushWidth;
     // Flag storing whether the carving animation is happening.
     private boolean carving;
     // Flag storing whether the carving is being recorded.
@@ -62,15 +63,13 @@ public class GUI {
         JFrame frame = new JFrame("Karve");
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        // Add the Image being carved.
-        this.displayImage = new JLabel(
-                icon(ICONS_FOLDER + "dragndrop.png", ICON_SIZE / 4, ICON_SIZE / 4),
-                JLabel.CENTER
-        );
-        this.displayImage.setPreferredSize(new Dimension(
-            SCREEN_WIDTH / 4,
-            SCREEN_HEIGHT / 4
-        ));
+        this.brushWidth = Utils.min(SCREEN_WIDTH, SCREEN_HEIGHT) / 120;
+        if (this.brushWidth == 0) {
+            this.brushWidth = 5;
+        }
+
+        // Add the display image showing the image being carved.
+        this.displayImage = new JLabel(icon("dragdrop.png", ICON_SIZE / 4), JLabel.CENTER);
         panel.add(this.displayImage);
 
         // The menuPanel stores all the buttons, checkboxes and the slider.
@@ -83,7 +82,7 @@ public class GUI {
 
         // Add the "Karve" logo.
         JPanel titlePanel = new JPanel();
-        JLabel title = new JLabel(icon(ICONS_FOLDER + "logo.png", ICON_SIZE * 3 / 4), JLabel.CENTER);
+        JLabel title = new JLabel(icon("logo.png", ICON_SIZE * 3 / 4), JLabel.CENTER);
         // Add "title" to a JPanel to center it.
         titlePanel.add(title);
         menuPanel.add(titlePanel);
@@ -93,9 +92,9 @@ public class GUI {
         JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, SLIDER, SLIDER / 2);
         slider.setFocusable(false);
         ImageIcon[] speeds = new ImageIcon[]{
-                icon(ICONS_FOLDER + "speed1.png"),
-                icon(ICONS_FOLDER + "speed2.png"),
-                icon(ICONS_FOLDER + "speed3.png")
+                icon("speed1.png"),
+                icon("speed2.png"),
+                icon("speed3.png")
         };
         JLabel speedometer = new JLabel(speeds[1], JLabel.CENTER);
         slider.addChangeListener(e -> speedometer.setIcon(speeds[slider.getValue() / (SLIDER / speeds.length + 1)]));
@@ -107,10 +106,10 @@ public class GUI {
         // "Show Seams" checkbox.
         Font font = new Font("Arial", Font.PLAIN, 15);
         JPanel checkBoxPanel = new JPanel(new GridLayout(2, 2));
-        JCheckBox highlight = new JCheckBox("Show Seams");
-        highlight.setFont(font);
-        highlight.addItemListener(e -> this.highlight = !this.highlight);
-        checkBoxPanel.add(highlight);
+        JCheckBox highlightCheckBox = new JCheckBox("Show Seams");
+        highlightCheckBox.setFont(font);
+        highlightCheckBox.addItemListener(e -> this.highlight = !this.highlight);
+        checkBoxPanel.add(highlightCheckBox);
         // "Horizontal" checkbox.
         JCheckBox horizontalCheckBox = new JCheckBox("Horizontal");
         horizontalCheckBox.setFont(font);
@@ -122,10 +121,10 @@ public class GUI {
         });
         checkBoxPanel.add(horizontalCheckBox);
         // "Recording" checkbox.
-        JCheckBox recording = new JCheckBox("Recording");
-        recording.setFont(font);
-        recording.addItemListener(e -> this.recording = !this.recording);
-        checkBoxPanel.add(recording);
+        JCheckBox recordingCheckBox = new JCheckBox("Recording");
+        recordingCheckBox.setFont(font);
+        recordingCheckBox.addItemListener(e -> this.recording = !this.recording);
+        checkBoxPanel.add(recordingCheckBox);
         // "Update" checkbox.
         JCheckBox updateCheckBox = new JCheckBox("Update");
         updateCheckBox.setFont(font);
@@ -142,16 +141,16 @@ public class GUI {
 
         // Add all "Pause/Play", "Add", "Remove" and "Snapshot" buttons.
         JPanel buttonPanel = new JPanel(new GridLayout(4, 1));
-        ImageIcon play = icon(ICONS_FOLDER + "play.png");
-        ImageIcon pause = icon(ICONS_FOLDER + "pause.png");
+        ImageIcon play = icon("play.png");
+        ImageIcon pause = icon("pause.png");
         JButton playButton = new JButton("Animate Seams");
         playButton.setIcon(play);
         JButton addButton = new JButton("Add Seam");
-        addButton.setIcon(icon(ICONS_FOLDER + "add.png"));
+        addButton.setIcon(icon("add.png"));
         JButton removeButton = new JButton("Remove Seam");
-        removeButton.setIcon(icon(ICONS_FOLDER + "remove.png"));
+        removeButton.setIcon(icon("remove.png"));
         JButton snapshotButton = new JButton("Snapshot");
-        snapshotButton.setIcon(icon(ICONS_FOLDER + "snapshot.png"));
+        snapshotButton.setIcon(icon("snapshot.png"));
 
         // Function to run in separate thread when the "Play" button is pressed.
         Runnable animate = () -> {
@@ -254,7 +253,9 @@ public class GUI {
      */
     private void setDisplayImage() {
         SeamCarver carver = this.carver[this.idx];
-        this.displayImage.setIcon(getScaledImage(carver));
+        ImageIcon icon = getScaledImage(carver);
+        this.displayImage.setIcon(icon);
+        this.displayImage.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
     }
 
     /*
@@ -291,21 +292,26 @@ public class GUI {
                     List<File> droppedFiles = (List) evt
                                     .getTransferable()
                                     .getTransferData(DataFlavor.javaFileListFlavor);
-                    File file = droppedFiles.get(0);
+                    File image = droppedFiles.get(0);
 
                     // Vertical Seam Carver
-                    carver[0] = new SeamCarver(file);
+                    carver[0] = new SeamCarver(image);
                     // Horizontal Seam Carver
-                    carver[1] = new SeamCarver(Utils.transpose(Utils.mirror(Utils.readImage(file))));
+                    carver[1] = new SeamCarver(Utils.transpose(Utils.mirror(Utils.readImage(image))));
 
                     idx = horizontal ? 1 : 0;
                     scale = Utils.getDimensions(carver[idx].getWidth(), carver[idx].getHeight());
 
                     frame.setTitle("Karve - " + carver[idx].getWidth() + " x " + carver[idx].getHeight());
 
-                    ImageIcon image = getScaledImage(carver[idx]);
-                    displayImage.setPreferredSize(new Dimension(image.getIconWidth(), image.getIconHeight()));
-                    displayImage.setIcon(image);
+                    ImageIcon imageIcon = getScaledImage(carver[idx]);
+                    if (horizontal) {
+                        displayImage.setVerticalAlignment(JLabel.CENTER);
+                    } else {
+                        displayImage.setHorizontalAlignment(JLabel.RIGHT);
+                    }
+                    displayImage.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
+                    displayImage.setIcon(imageIcon);
 
                     setEnabled(menuPanel, true);
                     frame.pack();
@@ -347,13 +353,13 @@ public class GUI {
                 if (horizontal) { int temp = cX; cX = cY; cY = temp; cY = imageWidth - cY; }
                 if (horizontal) { int temp = imageWidth; imageWidth = imageHeight; imageHeight = temp; }
                 int[] image = carver[idx].getImage();
-                for (int row = cY - BRUSH_WIDTH; row <= cY + BRUSH_WIDTH; row++) {
+                boolean isLeftClick = SwingUtilities.isLeftMouseButton(e);
+                for (int row = cY - brushWidth; row <= cY + brushWidth; row++) {
                     if (row < 0 || row >= imageHeight) continue;
-                    for (int col = cX - BRUSH_WIDTH; col <= cX + BRUSH_WIDTH; col++) {
+                    for (int col = cX - brushWidth; col <= cX + brushWidth; col++) {
                         if (col < 0 || col >= imageWidth) continue;
                         // If left click, remove edge at given coordinate.
                         // If right click, add edge.
-                        boolean isLeftClick = SwingUtilities.isLeftMouseButton(e);
                         carver[idx].setEdge(col, row, isLeftClick ? 0 : 255);
                         image[row * imageWidth + col] = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
                     }
@@ -417,8 +423,9 @@ public class GUI {
      * @param dims      The scaling factors to use to resize the Icon.
      * @return          An ImageIcon scaled to the given dimensions.
      */
-    private static ImageIcon icon(String filename, int... dims) {
-        ImageIcon icon = new ImageIcon(filename);
+    private ImageIcon icon(String filename, int... dims) {
+        URL url = getClass().getResource(ICONS_FOLDER + "/" + filename);
+        ImageIcon icon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(url));
         int width, height;
         if (dims.length == 0) {
             width = height = ICON_SIZE;
