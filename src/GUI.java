@@ -63,11 +63,6 @@ public class GUI {
         JFrame frame = new JFrame("Karve");
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        this.brushWidth = Utils.min(SCREEN_WIDTH, SCREEN_HEIGHT) / 120;
-        if (this.brushWidth == 0) {
-            this.brushWidth = 5;
-        }
-
         // Add the display image showing the image being carved.
         this.displayImage = new JLabel(icon("dragdrop.png", ICON_SIZE / 4), JLabel.CENTER);
         panel.add(this.displayImage);
@@ -298,6 +293,11 @@ public class GUI {
                     carver[0] = new SeamCarver(image);
                     // Horizontal Seam Carver
                     carver[1] = new SeamCarver(Utils.transpose(Utils.mirror(Utils.readImage(image))));
+
+                    brushWidth = Utils.min(carver[0].getWidth(), carver[0].getHeight()) / 120;
+                    if (brushWidth == 0) {
+                        brushWidth = 5;
+                    }
 
                     idx = horizontal ? 1 : 0;
                     scale = Utils.getDimensions(carver[idx].getWidth(), carver[idx].getHeight());
