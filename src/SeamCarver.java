@@ -39,6 +39,7 @@ public class SeamCarver {
     public SeamCarver(File file) {
         this(Utils.readImage(file));
     }
+
     public SeamCarver(String filename) {
         this(Utils.readImage(filename));
     }
