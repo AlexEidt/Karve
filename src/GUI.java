@@ -30,6 +30,8 @@ public class GUI {
     public static String ICONS_FOLDER = "Icons";
     // Size of the button icons.
     public static final int ICON_SIZE = 30;
+    // Energy Type to use for Seam Carving. Either Forward or Backward.
+    public static final EnergyType ENERGY_TYPE = EnergyType.BACKWARD;
 
     // Determines the width of the "brush" used to mark the priority mask by clicking on the image.
     private int brushWidth;
@@ -55,9 +57,12 @@ public class GUI {
     private SeamCarver[] carver;
     // The index of the current Seam Carver in "this.carver".
     private int idx;
+    // Create Seam Carvers.
+    private SeamCarverFactory factory;
 
     public GUI() {
         this.carver = new SeamCarver[]{null, null};
+        this.factory = new SeamCarverFactory();
         this.update = true;
 
         JFrame frame = new JFrame("Karve");
@@ -290,9 +295,12 @@ public class GUI {
                     File image = droppedFiles.get(0);
 
                     // Vertical Seam Carver
-                    carver[0] = new SeamCarver(image);
+                    carver[0] = factory.create(image, ENERGY_TYPE);
                     // Horizontal Seam Carver
-                    carver[1] = new SeamCarver(Utils.transpose(Utils.mirror(Utils.readImage(image))));
+                    carver[1] = factory.create(
+                            Utils.transpose(Utils.mirror(Utils.readImage(image))),
+                            ENERGY_TYPE
+                    );
 
                     brushWidth = Utils.min(carver[0].getWidth(), carver[0].getHeight()) / 120;
                     if (brushWidth == 0) {
@@ -360,7 +368,7 @@ public class GUI {
                         if (col < 0 || col >= imageWidth) continue;
                         // If left click, remove edge at given coordinate.
                         // If right click, add edge.
-                        carver[idx].setEdge(col, row, isLeftClick ? 0 : 255);
+                        carver[idx].setEnergy(col, row, isLeftClick ? 0 : 255);
                         image[row * imageWidth + col] = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
                     }
                 }

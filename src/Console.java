@@ -23,6 +23,9 @@ public class Console {
         }
         boolean horizontal = getUserData(console, "Horizontal (h) or Vertical (v) Seams?: ", "vh") == 'h';
         boolean showSeams = getUserData(console, "Show last highlighted seam? (y/n): ", "ny") == 'y';
+        boolean energyType = getUserData(console, "Use Forward (f) or Backward (b) Energy?: ", "fb") == 'f';
+        EnergyType type = energyType ? EnergyType.FORWARD : EnergyType.BACKWARD;
+
         int highlightColor = 0;
         if (showSeams) {
             System.out.println("Enter highlight color as R,G,B: ");
@@ -40,8 +43,8 @@ public class Console {
         if (horizontal) {
             image = Utils.transpose(Utils.mirror(image));
         }
-
-        SeamCarver carver = new SeamCarver(image);
+        SeamCarverFactory factory = new SeamCarverFactory();
+        SeamCarver carver = factory.create(image, type);
 
         System.out.println("Carving...");
         int numCarved = carver.remove(seams, showSeams, highlightColor);
