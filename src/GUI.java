@@ -349,7 +349,7 @@ public class GUI {
              */
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (carving || !update || carver[0] == null) return;
+                if (carving || !update || carver[0] == null || ENERGY_TYPE == EnergyType.FORWARD) return;
                 float x = e.getX(), y = e.getY();
                 int imageWidth = carver[idx].getWidth(), imageHeight = carver[idx].getHeight();
                 // If horizontal, swap image width and height for calculations below.
