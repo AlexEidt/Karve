@@ -30,16 +30,6 @@ Similarly, any areas you right click on will be marked in green and the algorith
 
 <br />
 
-# Files
-
-File | Description
---- | ---
-`Console.java` | Runs the Seam Carver from the console. For those interested in carving a certain number of seams from an image without the user interface.
-`GUI.java` | Runs the Graphical User Interface (GUI) window that allows the user to interface with the Karver.
-`Main.java` | Runs the application.
-`SeamCarver.java` | Standalone Seam Carver class.
-`Utils.java` |  Contains a collection of useful (and unrelated) functions for the Seam Carver.
-
 # Button Descriptions
 
 ## Checkboxes
@@ -55,11 +45,11 @@ Button | Description
 
 Button | Description
 --- | ---
-<img src="Icons/speedometer.gif" width=70px alt="Speedometer Icon" /> | Indicates carving speed.
-<img src="Icons/startstop.gif" width=70px alt="Start and Stop Icons" /> | Start/Stop removing/adding seams from the image. The speed of removal is determined by the slider.
-<img src="Icons/add.png" width=70px alt="Add Icon" /> | Add back the most recently removed seam.
-<img src="Icons/remove.png" width=70px alt="Remove Icon" /> | Remove the next seam.
-<img src="Icons/snapshot.png" width=70px alt="Snapshot Icon" /> | Take a snapshot of the current image.
+<img src="src/Icons/speedometer.gif" width=70px alt="Speedometer Icon" /> | Indicates carving speed.
+<img src="src/Icons/startstop.gif" width=70px alt="Start and Stop Icons" /> | Start/Stop removing/adding seams from the image. The speed of removal is determined by the slider.
+<img src="src/Icons/add.png" width=70px alt="Add Icon" /> | Add back the most recently removed seam.
+<img src="src/Icons/remove.png" width=70px alt="Remove Icon" /> | Remove the next seam.
+<img src="src/Icons/snapshot.png" width=70px alt="Snapshot Icon" /> | Take a snapshot of the current image.
 
 # Acknowledgements
 
