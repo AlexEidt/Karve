@@ -159,31 +159,11 @@ public class GUI {
             // and repeat until the user stops carving.
             while (this.carving) {
                 if (this.direction) {
-                    while (this.carving && carver[this.idx].add(this.highlight, SEAM_COLOR)) {
-                        if (this.recording) captureSnapshot(carver[this.idx]);
-                        if (this.update) this.setDisplayImage();
-                        frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
-                        Utils.delay(SLIDER - slider.getValue());
-                    }
-                    while (this.carving && carver[this.idx].remove(this.highlight, SEAM_COLOR)) {
-                        if (this.recording) captureSnapshot(carver[this.idx]);
-                        if (this.update) this.setDisplayImage();
-                        frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
-                        Utils.delay(SLIDER - slider.getValue());
-                    }
+                    this.carveAdd(frame, slider);
+                    this.carveRemove(frame, slider);
                 } else {
-                    while (this.carving && carver[this.idx].remove(this.highlight, SEAM_COLOR)) {
-                        if (this.recording) captureSnapshot(carver[this.idx]);
-                        if (this.update) this.setDisplayImage();
-                        frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
-                        Utils.delay(SLIDER - slider.getValue());
-                    }
-                    while (this.carving && carver[this.idx].add(this.highlight, SEAM_COLOR)) {
-                        if (this.recording) captureSnapshot(carver[this.idx]);
-                        if (this.update) this.setDisplayImage();
-                        frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
-                        Utils.delay(SLIDER - slider.getValue());
-                    }
+                    this.carveRemove(frame, slider);
+                    this.carveAdd(frame, slider);
                 }
             }
         };
@@ -248,8 +228,38 @@ public class GUI {
     }
 
     /*
+     * Add Seams back to the image when using the animate feature.
+     *
+     * @param frame     The UI Window. The title is updated to reflect the current size of the image.
+     * @param slider    The slider used to determine animation speed.
+     */
+    private void carveAdd(JFrame frame, JSlider slider) {
+        while (this.carving && carver[this.idx].add(this.highlight, SEAM_COLOR)) {
+            if (this.recording) captureSnapshot(carver[this.idx]);
+            if (this.update) this.setDisplayImage();
+            frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
+            Utils.delay(SLIDER - slider.getValue());
+        }
+    }
+
+    /*
+     * Remove Seams from the image when using the animate feature.
+     *
+     * @param frame     The UI Window. The title is updated to reflect the current size of the image.
+     * @param slider    The slider used to determine animation speed.
+     */
+    private void carveRemove(JFrame frame, JSlider slider) {
+        while (this.carving && carver[this.idx].remove(this.highlight, SEAM_COLOR)) {
+            if (this.recording) captureSnapshot(carver[this.idx]);
+            if (this.update) this.setDisplayImage();
+            frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
+            Utils.delay(SLIDER - slider.getValue());
+        }
+    }
+
+    /*
      * Sets/Updates the display image to the current state of the selected
-     * Seam Carver,
+     * Seam Carver.
      */
     private void setDisplayImage() {
         SeamCarver carver = this.carver[this.idx];
