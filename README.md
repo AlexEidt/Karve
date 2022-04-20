@@ -6,7 +6,18 @@
 
 **Karve** is a simple [Seam Carver](https://en.wikipedia.org/wiki/Seam_carving). Seam Carving is basically content aware image resizing. The algorithm preserves the objects in the image while less important background space is removed by removing "seams" from the image.
 
-With Karve you can carve out vertical and horizontal seams, and save your images as well!
+## Features
+
+* Vertical and Horizontal Seam Carving
+* "Animate" the Seam Carving Process at varying speeds
+* Real time carving for moderately sized images
+* Drag and Drop Images into the application
+* Object removal and preservation via highlighting
+* Togglable Seam Highlighting
+* Togglable GUI updating for faster carving
+* Backward and Forward Energy Seam Carving
+* Snapshot current image
+* Record Seam Carving animation by saving carved image snapshots
 
 To start, simply drag and drop the image into the application.
 
