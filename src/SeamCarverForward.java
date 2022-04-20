@@ -42,7 +42,7 @@ public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
 
     /*
      * Creates the energy map from the gradient image.
-     * Learn more: https://avikdas.com/2019/07/29/improved-seam-carving-with-forward-energy.html
+     * Learn more: https://github.com/axu2/improved-seam-carving
      */
     private void energyMap() {
         for (int h = 0; h < this.height; h++) {
