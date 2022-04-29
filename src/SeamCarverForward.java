@@ -45,11 +45,6 @@ public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
      * Learn more: https://github.com/axu2/improved-seam-carving
      */
     private void energyMap() {
-        for (int h = 0; h < this.height; h++) {
-            for (int w = 0; w < this.width; w++) {
-                this.minimums[h][w] = 0;
-            }
-        }
         for (int w = 0; w < this.width; w++) {
             int left = (w - 1 + this.width) % this.width;
             int right = (w + 1) % this.width;
