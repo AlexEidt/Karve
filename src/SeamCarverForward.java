@@ -11,7 +11,7 @@ import java.util.*;
 public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
 
     // Used as a cache to keep track of the minimum error created by removing a seam.
-    private int[][] minimums;
+    private final int[][] minimums;
 
     public SeamCarverForward(int[][] image) {
         super(image);

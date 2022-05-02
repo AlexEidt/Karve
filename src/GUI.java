@@ -52,13 +52,13 @@ public class GUI {
     // Scaling factor for display image.
     private int scale;
     // The display image.
-    private JLabel displayImage;
+    private final JLabel displayImage;
     // Stores the vertical and horizontal Seam Carvers.
-    private SeamCarver[] carver;
+    private final SeamCarver[] carver;
     // The index of the current Seam Carver in "this.carver".
     private int idx;
     // Create Seam Carvers.
-    private SeamCarverFactory factory;
+    private final SeamCarverFactory factory;
 
     public GUI() {
         this.carver = new SeamCarver[]{null, null};
@@ -117,7 +117,7 @@ public class GUI {
             this.horizontal = !this.horizontal;
             this.idx = this.horizontal ? 1 : 0;
             if (this.update) this.setDisplayImage();
-            frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
+            frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
         });
         checkBoxPanel.add(horizontalCheckBox);
         // "Recording" checkbox.
@@ -131,9 +131,9 @@ public class GUI {
         updateCheckBox.setSelected(this.update);
         updateCheckBox.addItemListener(e -> {
             this.update = !this.update;
-            carver[this.idx].updateImage(this.highlight, SEAM_COLOR);
+            this.carver[this.idx].updateImage(this.highlight, SEAM_COLOR);
             if (this.update) this.setDisplayImage();
-            carver[this.idx].setUpdate(this.update);
+            this.carver[this.idx].setUpdate(this.update);
         });
         checkBoxPanel.add(updateCheckBox);
 
@@ -186,26 +186,26 @@ public class GUI {
         // Add seam back when "Add" button is clicked.
         addButton.addActionListener(e -> {
             this.direction = true;
-            boolean valid = carver[this.idx].add(this.highlight, SEAM_COLOR);
+            boolean valid = this.carver[this.idx].add(this.highlight, SEAM_COLOR);
             if (valid) {
-                if (this.recording) captureSnapshot(carver[this.idx]);
+                if (this.recording) captureSnapshot(this.carver[this.idx]);
                 if (this.update) this.setDisplayImage();
-                frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
+                frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
             }
         });
         // Remove seam when "Remove" button is clicked.
         removeButton.addActionListener(e -> {
             this.direction = false;
-            boolean valid = carver[this.idx].remove(this.highlight, SEAM_COLOR);
+            boolean valid = this.carver[this.idx].remove(this.highlight, SEAM_COLOR);
             if (valid) {
-                if (this.recording) captureSnapshot(carver[this.idx]);
+                if (this.recording) captureSnapshot(this.carver[this.idx]);
                 if (this.update) this.setDisplayImage();
-                frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
+                frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
             }
         });
         // Create a snapshot of the current image when the "Snapshot" button is clicked.
         snapshotButton.addActionListener(e -> {
-            if (!this.recording) captureSnapshot(carver[this.idx]);
+            if (!this.recording) captureSnapshot(this.carver[this.idx]);
         });
         buttonPanel.add(playButton);
         buttonPanel.add(addButton);
@@ -235,9 +235,9 @@ public class GUI {
      */
     private void carveAdd(JFrame frame, JSlider slider) {
         while (this.carving && carver[this.idx].add(this.highlight, SEAM_COLOR)) {
-            if (this.recording) captureSnapshot(carver[this.idx]);
+            if (this.recording) captureSnapshot(this.carver[this.idx]);
             if (this.update) this.setDisplayImage();
-            frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
+            frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
             Utils.delay(SLIDER - slider.getValue());
         }
     }
@@ -250,9 +250,9 @@ public class GUI {
      */
     private void carveRemove(JFrame frame, JSlider slider) {
         while (this.carving && carver[this.idx].remove(this.highlight, SEAM_COLOR)) {
-            if (this.recording) captureSnapshot(carver[this.idx]);
+            if (this.recording) captureSnapshot(this.carver[this.idx]);
             if (this.update) this.setDisplayImage();
-            frame.setTitle("Karve - " + carver[this.idx].getWidth() + " x " + carver[this.idx].getHeight());
+            frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
             Utils.delay(SLIDER - slider.getValue());
         }
     }
