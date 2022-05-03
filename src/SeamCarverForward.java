@@ -3,6 +3,7 @@
  * Alex Eidt
  */
 
+import java.io.IOException;
 import java.util.*;
 
 /*
@@ -16,6 +17,8 @@ public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
     public SeamCarverForward(int[][] image) {
         super(image);
         int[][] gray = Utils.grayscale(image);
+        // The energy map for Forward Energy carving is just the grayscale version of
+        // the original image.
         this.energy = new ArrayList<>(this.height);
         for (int h = 0; h < this.height; h++) {
             List<Integer> row = new ArrayList<>(this.width);
@@ -45,9 +48,10 @@ public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
      * Learn more: https://github.com/axu2/improved-seam-carving
      */
     private void energyMap() {
+        // Initialize first row of energy map.
         for (int w = 0; w < this.width; w++) {
-            int left = (w - 1 + this.width) % this.width;
-            int right = (w + 1) % this.width;
+            int left = Utils.mod(w - 1, this.width);
+            int right = Utils.mod(w + 1, this.width);
 
             int cU = Math.abs(this.energy.get(0).get(right) - this.energy.get(0).get(left));
             this.minimums[0][w] = cU;
@@ -55,8 +59,8 @@ public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
         }
         for (int h = 1; h < this.height; h++) {
             for (int w = 0; w < this.width; w++) {
-                int left = (w - 1 + this.width) % this.width;
-                int right = (w + 1) % this.width;
+                int left = Utils.mod(w - 1, this.width);
+                int right = Utils.mod(w + 1, this.width);
 
                 int cU = Math.abs(this.energy.get(h).get(right) - this.energy.get(h).get(left));
                 int cL = Math.abs(this.energy.get(h - 1).get(w) - this.energy.get(h).get(left)) + cU;

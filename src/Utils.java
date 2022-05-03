@@ -31,6 +31,11 @@ public class Utils {
         return a > b ? a : b;
     }
 
+    // Modulus a % m.
+    public static int mod(int a, int m) {
+        return (a % m + m) % m;
+    }
+
     /*
      * Converts an integer array representing pixels to a BufferedImage, which is needed
      * to display the image on the User Interface.
