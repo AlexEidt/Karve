@@ -36,6 +36,33 @@ public class Utils {
         return (a % m + m) % m;
     }
 
+    interface ParallelFunc {
+        void process(int cpu, int cpus);
+    }
+
+    /*
+     * Runs the given function in parallel on separate threads on all CPU cores.
+     *
+     * @param func      The function to run.
+     */
+    public static void parallel(ParallelFunc func) {
+        int cpus = Runtime.getRuntime().availableProcessors();
+
+        Thread[] threads = new Thread[cpus];
+        for (int i = 0; i < cpus; i++) {
+            int cpu = i;
+            threads[cpu] = new Thread(() -> func.process(cpu, cpus));
+        }
+
+        for (Thread thread : threads)
+            thread.start();
+
+        try {
+            for (Thread thread : threads)
+                thread.join();
+        } catch (InterruptedException ie) {}
+    }
+
     /*
      * Converts an integer array representing pixels to a BufferedImage, which is needed
      * to display the image on the User Interface.
@@ -74,33 +101,6 @@ public class Utils {
         });
 
         return gray;
-    }
-
-    interface ParallelFunc {
-        void process(int cpu, int cpus);
-    }
-
-    /*
-     * Runs the given function in parallel on separate threads on all CPU cores.
-     *
-     * @param func      The function to run.
-     */
-    public static void parallel(ParallelFunc func) {
-        int cpus = Runtime.getRuntime().availableProcessors();
-
-        Thread[] threads = new Thread[cpus];
-        for (int i = 0; i < cpus; i++) {
-            int cpu = i;
-            threads[cpu] = new Thread(() -> func.process(cpu, cpus));
-        }
-
-        for (Thread thread : threads)
-            thread.start();
-
-        try {
-            for (Thread thread : threads)
-                thread.join();
-        } catch (InterruptedException ie) {}
     }
 
     /*
