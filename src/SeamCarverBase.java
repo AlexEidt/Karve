@@ -54,12 +54,10 @@ public class SeamCarverBase {
         // Copy the "image" into "this.image" and "this.data".
         Utils.parallel((cpu, cpus) -> {
             for (int h = cpu; h < this.height; h += cpus) {
-                List<Integer> imageRow = this.image.get(h);
                 for (int w = 0; w < this.width; w++) {
-                    imageRow.add(image[h][w]);
+                    this.image.get(h).add(image[h][w]);
                     this.data[h * this.width + w] = image[h][w];
                 }
-                this.image.add(imageRow);
             }
         });
     }
