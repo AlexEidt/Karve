@@ -47,16 +47,21 @@ public class SeamCarverBase {
         this.data = new int[this.height * this.width];
         this.map = new int[this.height][this.width];
 
-        // Copy the "image" into "this.image" and "this.data".
-        int index = 0;
         for (int h = 0; h < this.height; h++) {
-            List<Integer> imageRow = new ArrayList<>(this.width);
-            for (int w = 0; w < this.width; w++) {
-                imageRow.add(image[h][w]);
-                this.data[index++] = image[h][w];
-            }
-            this.image.add(imageRow);
+            this.image.add(new ArrayList<>(this.width));
         }
+
+        // Copy the "image" into "this.image" and "this.data".
+        Utils.parallel((cpu, cpus) -> {
+            for (int h = cpu; h < this.height; h += cpus) {
+                List<Integer> imageRow = this.image.get(h);
+                for (int w = 0; w < this.width; w++) {
+                    imageRow.add(image[h][w]);
+                    this.data[h * this.width + w] = image[h][w];
+                }
+                this.image.add(imageRow);
+            }
+        });
     }
 
     // Returns the width of the image.
@@ -132,10 +137,13 @@ public class SeamCarverBase {
         // Go through all indices of the most recently removed
         // seam and add the corresponding values back into the
         // images.
-        for (int i = 0; i < path.length; i++) {
-            this.image.get(i).add(path[i], values[i]);
-            this.energy.get(i).add(path[i], energy[i]);
-        }
+        Utils.parallel((cpu, cpus) -> {
+            for (int i = cpu; i < path.length; i += cpus) {
+                this.image.get(i).add(path[i], values[i]);
+                this.energy.get(i).add(path[i], energy[i]);
+            }
+        });
+
         this.width += 1;
         if (this.update) {
             if (highlight) {

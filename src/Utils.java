@@ -54,12 +54,14 @@ public class Utils {
             threads[cpu] = new Thread(() -> func.process(cpu, cpus));
         }
 
-        for (Thread thread : threads)
+        for (Thread thread : threads) {
             thread.start();
+        }
 
         try {
-            for (Thread thread : threads)
+            for (Thread thread : threads) {
                 thread.join();
+            }
         } catch (InterruptedException ie) {}
     }
 
