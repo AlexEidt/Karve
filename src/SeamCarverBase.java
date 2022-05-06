@@ -182,7 +182,7 @@ public class SeamCarverBase {
         int[] energyValues = new int[this.height];
 
         // Find the minimum value in the first row of the energy map.
-        int minIndex = Utils.minIndex(this.map[0], this.width);
+        int minIndex = Utils.argmin(this.map[0], this.width);
         path[0] = minIndex;
         values[0] = this.image.get(0).remove(minIndex);
         energyValues[0] = this.energy.get(0).remove(minIndex);
@@ -203,9 +203,15 @@ public class SeamCarverBase {
                 else if (row[minIndex + 1] == minValue) minIndex = minIndex + 1;
             }
             path[h] = minIndex;
-            values[h] = this.image.get(h).remove(minIndex);
-            energyValues[h] = this.energy.get(h).remove(minIndex);
         }
+
+        Utils.parallel((cpu, cpus) -> {
+            for (int h = 1 + cpu; h < this.height; h += cpus) {
+                values[h] = this.image.get(h).remove(path[h]);
+                energyValues[h] = this.energy.get(h).remove(path[h]);
+            }
+        });
+
         this.width -= 1;
         if (this.update) {
             if (highlight) {
@@ -236,13 +242,14 @@ public class SeamCarverBase {
 
     // Updates the current flattened image to match the current state of the image.
     protected void updateImage() {
-        int index = 0;
-        for (int h = 0; h < this.height; h++) {
-            List<Integer> row = this.image.get(h);
-            for (int w = 0; w < this.width; w++) {
-                this.data[index++] = row.get(w);
+        Utils.parallel((cpu, cpus) -> {
+            for (int h = cpu; h < this.height; h += cpus) {
+                List<Integer> row = this.image.get(h);
+                for (int w = 0; w < this.width; w++) {
+                    this.data[h * this.width + w] = row.get(w);
+                }
             }
-        }
+        });
     }
 
     /*
@@ -253,17 +260,18 @@ public class SeamCarverBase {
      * @param color     The seam color to use.
      */
     protected void updateImage(int[] path, int color) {
-        int index = 0;
-        for (int h = 0; h < this.height; h++) {
-            List<Integer> row = this.image.get(h);
-            for (int w = 0; w < this.width; w++) {
-                this.data[index++] = row.get(w);
+        Utils.parallel((cpu, cpus) -> {
+            for (int h = cpu; h < this.height; h += cpus) {
+                List<Integer> row = this.image.get(h);
+                for (int w = 0; w < this.width; w++) {
+                    this.data[h * this.width + w] = row.get(w);
+                }
+                int pathIndex = path[h];
+                for (int i = pathIndex - 1; i <= pathIndex + 1; i++) {
+                    if (i < 0 || i >= this.width) continue;
+                    this.data[h * this.width + i] = color;
+                }
             }
-            int pathIndex = path[h];
-            for (int i = pathIndex - 1; i <= pathIndex + 1; i++) {
-                if (i < 0 || i >= this.width) continue;
-                this.data[h * this.width + i] = color;
-            }
-        }
+        });
     }
 }

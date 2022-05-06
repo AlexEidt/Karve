@@ -18,6 +18,7 @@
 * Backward and Forward Energy Seam Carving
 * Snapshot current image
 * Record Seam Carving animation by saving carved image snapshots
+* Uses all CPU Cores for faster carving
 
 To start, simply drag and drop the image into the application.
 

@@ -60,16 +60,47 @@ public class Utils {
     public static int[][] grayscale(int[][] image) {
         int height = image.length, width = image[0].length;
         int[][] gray = new int[height][width];
-        for (int h = 0; h < height; h++) {
-            for (int w = 0; w < width; w++) {
-                int pixel = image[h][w];
-                int r = (pixel >> 16) & 0xFF;
-                int g = (pixel >> 8) & 0xFF;
-                int b = pixel & 0xFF;
-                gray[h][w] = (3 * r + 4 * g + b) / 8;
+
+        parallel((cpu, cpus) -> {
+            for (int h = cpu; h < height; h += cpus) {
+                for (int w = 0; w < width; w++) {
+                    int pixel = image[h][w];
+                    int r = (pixel >> 16) & 0xFF;
+                    int g = (pixel >> 8) & 0xFF;
+                    int b = pixel & 0xFF;
+                    gray[h][w] = (3 * r + 4 * g + b) / 8;
+                }
             }
-        }
+        });
+
         return gray;
+    }
+
+    interface ParallelFunc {
+        void process(int cpu, int cpus);
+    }
+
+    /*
+     * Runs the given function in parallel on separate threads on all CPU cores.
+     *
+     * @param func      The function to run.
+     */
+    public static void parallel(ParallelFunc func) {
+        int cpus = Runtime.getRuntime().availableProcessors();
+
+        Thread[] threads = new Thread[cpus];
+        for (int i = 0; i < cpus; i++) {
+            int cpu = i;
+            threads[cpu] = new Thread(() -> func.process(cpu, cpus));
+        }
+
+        for (Thread thread : threads)
+            thread.start();
+
+        try {
+            for (Thread thread : threads)
+                thread.join();
+        } catch (InterruptedException ie) {}
     }
 
     /*
@@ -79,7 +110,7 @@ public class Utils {
      * @param size      The actual size of "data".
      * @return          An integer representing the index of the minimum value in "data".
      */
-    public static int minIndex(int[] data, int size) {
+    public static int argmin(int[] data, int size) {
         int index = 0;
         int min = data[0];
         for (int i = 1; i < size; i++) {
@@ -103,22 +134,25 @@ public class Utils {
         int pad2 = pad * 2;
         int[][] result = new int[height + pad2][width + pad2];
 
-        int h, w;
-        for (h = pad; h < height + pad; h++) {
-            for (w = 0; w < pad; w++) result[h][w] = image[h - pad][0];
-            for (w = pad; w < width + pad; w++) result[h][w] = image[h - pad][w - pad];
-            for (w = width + pad; w < width + pad2; w++) result[h][w] = image[h - pad][width - 1];
-        }
-        for (h = 0; h < pad; h++) {
-            for (w = 0; w < pad; w++) result[h][w] = image[0][0];
-            for (w = pad; w < width + pad; w++) result[h][w] = image[0][w - pad];
-            for (w = width + pad; w < width + pad2; w++) result[h][w] = image[0][width - 1];
-        }
-        for (h = height + pad; h < height + pad2; h++) {
-            for (w = 0; w < pad; w++) result[h][w] = image[height - 1][0];
-            for (w = pad; w < width + pad; w++) result[h][w] = image[height - 1][w - pad];
-            for (w = width + pad; w < width + pad2; w++) result[h][w] = image[height - 1][width - 1];
-        }
+        parallel((cpu, cpus) -> {
+            int h, w;
+            for (h = pad + cpu; h < height + pad; h += cpus) {
+                for (w = 0; w < pad; w++) result[h][w] = image[h - pad][0];
+                for (w = pad; w < width + pad; w++) result[h][w] = image[h - pad][w - pad];
+                for (w = width + pad; w < width + pad2; w++) result[h][w] = image[h - pad][width - 1];
+            }
+            for (h = cpu; h < pad; h += cpus) {
+                for (w = 0; w < pad; w++) result[h][w] = image[0][0];
+                for (w = pad; w < width + pad; w++) result[h][w] = image[0][w - pad];
+                for (w = width + pad; w < width + pad2; w++) result[h][w] = image[0][width - 1];
+            }
+            for (h = height + pad + cpu; h < height + pad2; h += cpus) {
+                for (w = 0; w < pad; w++) result[h][w] = image[height - 1][0];
+                for (w = pad; w < width + pad; w++) result[h][w] = image[height - 1][w - pad];
+                for (w = width + pad; w < width + pad2; w++) result[h][w] = image[height - 1][width - 1];
+            }
+        });
+
         return result;
     }
 
@@ -132,25 +166,29 @@ public class Utils {
         int height = image.length + 2, width = image[0].length + 2;
         int[][] gray = pad(grayscale(image), 1);
         List<List<Integer>> result = new ArrayList<>(height);
-        for (int h = 1; h < height - 1; h++) {
-            List<Integer> row = new ArrayList<>(width);
-            for (int w = 1; w < width - 1; w++) {
-                int sx = gray[h - 1][w - 1] -
-                        gray[h - 1][w + 1] +
-                        2 * gray[h][w - 1] -
-                        2 * gray[h][w + 1] +
-                        gray[h + 1][w - 1] -
-                        gray[h + 1][w - 1];
-                int sy = gray[h - 1][w - 1] +
-                        2 * gray[h - 1][w] +
-                        gray[h - 1][w + 1] -
-                        gray[h + 1][w - 1] -
-                        2 * gray[h + 1][w] -
-                        gray[h + 1][w + 1];
-                row.add(Math.abs(sx) + Math.abs(sy));
+        for (int i = 0; i < height; i++)
+            result.add(new ArrayList<>(width));
+
+        parallel((cpu, cpus) -> {
+            for (int h = 1 + cpu; h < height - 1; h += cpus) {
+                for (int w = 1; w < width - 1; w++) {
+                    int sx = gray[h - 1][w - 1] -
+                            gray[h - 1][w + 1] +
+                            2 * gray[h][w - 1] -
+                            2 * gray[h][w + 1] +
+                            gray[h + 1][w - 1] -
+                            gray[h + 1][w - 1];
+                    int sy = gray[h - 1][w - 1] +
+                            2 * gray[h - 1][w] +
+                            gray[h - 1][w + 1] -
+                            gray[h + 1][w - 1] -
+                            2 * gray[h + 1][w] -
+                            gray[h + 1][w + 1];
+                    result.get(h - 1).add(Math.abs(sx) + Math.abs(sy));
+                }
             }
-            result.add(row);
-        }
+        });
+
         return result;
     }
 
@@ -165,17 +203,21 @@ public class Utils {
         int height = image.length, width = image[0].length;
         int blockSize = 8;
         int[][] result = new int[width][height];
-        for (int h = 0; h < height; h += blockSize) {
-            for (int w = 0; w < width; w += blockSize) {
-                for (int i = h; i < i + blockSize; i++) {
-                    if (i >= height) break;
-                    for (int j = w; j < w + blockSize; j++) {
-                        if (j >= width) break;
-                        result[j][i] = image[i][j];
+
+        parallel((cpu, cpus) -> {
+            for (int h = cpu * blockSize; h < height; h += blockSize * cpus) {
+                for (int w = 0; w < width; w += blockSize) {
+                    for (int i = h; i < i + blockSize; i++) {
+                        if (i >= height) break;
+                        for (int j = w; j < w + blockSize; j++) {
+                            if (j >= width) break;
+                            result[j][i] = image[i][j];
+                        }
                     }
                 }
             }
-        }
+        });
+
         return result;
     }
 
@@ -187,13 +229,17 @@ public class Utils {
      */
     public static int[][] mirror(int[][] image) {
         int height = image.length, width = image[0].length;
-        for (int h = 0; h < height; h++) {
-            for (int w = 0; w < width / 2; w++) {
-                int temp = image[h][w];
-                image[h][w] = image[h][width - 1 - w];
-                image[h][width - 1 - w] = temp;
+
+        parallel((cpu, cpus) -> {
+            for (int h = cpu; h < height; h += cpus) {
+                for (int w = 0; w < width / 2; w++) {
+                    int temp = image[h][w];
+                    image[h][w] = image[h][width - 1 - w];
+                    image[h][width - 1 - w] = temp;
+                }
             }
-        }
+        });
+
         return image;
     }
 
@@ -332,11 +378,15 @@ public class Utils {
             int width = image.getWidth();
             int height = image.getHeight();
             int[][] pixels = new int[height][width];
-            for (int h = 0; h < height; h++) {
-                for (int w = 0; w < width; w++) {
-                    pixels[h][w] = image.getRGB(w, h);
+
+            parallel((cpu, cpus) -> {
+                for (int h = cpu; h < height; h += cpus) {
+                    for (int w = 0; w < width; w++) {
+                        pixels[h][w] = image.getRGB(w, h);
+                    }
                 }
-            }
+            });
+
             return pixels;
         } catch (IOException e) {
             System.out.println("Error opening " + file.getName());

@@ -408,7 +408,7 @@ public class GUI {
         displayIcon = displayIcon.getScaledInstance(
                 Utils.max(width / this.scale, 1),
                 Utils.max(height / this.scale, 1),
-                Image.SCALE_SMOOTH
+                Image.SCALE_FAST
         );
         return new ImageIcon(displayIcon);
     }
@@ -451,6 +451,6 @@ public class GUI {
             width = icon.getIconWidth() / dims[0];
             height = icon.getIconHeight() / dims[0];
         }
-        return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
+        return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_FAST));
     }
 }
