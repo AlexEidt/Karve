@@ -168,8 +168,9 @@ public class Utils {
         int height = image.length + 2, width = image[0].length + 2;
         int[][] gray = pad(grayscale(image), 1);
         List<List<Integer>> result = new ArrayList<>(height);
-        for (int i = 0; i < height; i++)
+        for (int i = 0; i < height; i++) {
             result.add(new ArrayList<>(width));
+        }
 
         parallel((cpu, cpus) -> {
             for (int h = 1 + cpu; h < height - 1; h += cpus) {
