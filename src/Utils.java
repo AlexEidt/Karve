@@ -187,7 +187,7 @@ public class Utils {
                             gray[h + 1][w - 1] -
                             2 * gray[h + 1][w] -
                             gray[h + 1][w + 1];
-                    result.get(h - 1).add(Math.abs(sx) + Math.abs(sy));
+                    result.get(h - 1).add(Math.min(Math.abs(sx) + Math.abs(sy), 255));
                 }
             }
         });
