@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Random;
 
 public class GUI {
-    public static int SCREEN_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
-    public static int SCREEN_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     // Determines the range (0 - SLIDER) of values for the slider.
     public static volatile int SLIDER = 1000;
     // Color of the seams (if highlighting).
@@ -184,6 +182,7 @@ public class GUI {
         playButton.addActionListener(e -> {
             addButton.setEnabled(this.carving);
             removeButton.setEnabled(this.carving);
+            snapshotButton.setEnabled(this.carving);
             updateCheckBox.setEnabled(this.carving);
             horizontalCheckBox.setEnabled(this.carving);
             this.carving = !this.carving;
