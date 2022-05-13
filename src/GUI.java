@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Random;
 
 public class GUI {
     public static int SCREEN_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
@@ -375,9 +376,10 @@ public class GUI {
              * a left or right-click the corresponding pixels are colored red or green
              * to show areas of low or high priority.
              */
+            Random rand = new Random(System.currentTimeMillis());
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (carving || !update || carver[idx] == null || ENERGY_TYPE == EnergyType.FORWARD) return;
+                if (carving || !update || carver[idx] == null) return;
                 float x = e.getX(), y = e.getY();
                 SeamCarver current = carver[idx];
                 int imageWidth = bufferedImage.getWidth(), imageHeight = bufferedImage.getHeight();
@@ -389,13 +391,16 @@ public class GUI {
                 if (horizontal) { int temp = imageWidth; imageWidth = imageHeight; imageHeight = temp; }
                 if (cX >= imageWidth || cY >= imageHeight) return;
                 boolean isLeftClick = SwingUtilities.isLeftMouseButton(e);
+                int energy = ENERGY_TYPE == EnergyType.FORWARD ?
+                        (isLeftClick ? 0 : rand.nextInt(0, 256)) : (isLeftClick ? 0 : 255);
+                int color = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
                 int[] image = current.getImage();
                 int cWidth = current.getWidth(), cHeight = current.getHeight();
                 for (int r = Utils.max(cY - brushWidth, 0); r < Utils.min(cY + brushWidth, cHeight); r++) {
                     for (int c = Utils.max(cX - brushWidth, 0); c < Utils.min(cX + brushWidth, cWidth); c++) {
                         // If left click, remove edge at given coordinate. If right click, add edge.
-                        current.setEnergy(c, r, isLeftClick ? 0 : 255);
-                        image[r * cWidth + c] = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
+                        current.setEnergy(c, r, energy);
+                        image[r * cWidth + c] = color;
                     }
                 }
                 updateDisplayImage();
