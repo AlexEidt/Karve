@@ -428,7 +428,7 @@ public class GUI {
         } else {
             this.bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
             for (int y = 0; y < height; y++) {
-                this.bufferedImage.setRGB( width - 1, y, 0xFF);
+                this.bufferedImage.setRGB(width - 1, y, 0xFF);
             }
         }
 
