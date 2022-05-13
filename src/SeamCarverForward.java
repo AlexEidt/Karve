@@ -58,7 +58,7 @@ public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
             int right = Utils.mod(w + 1, this.width);
 
             int cU = Math.abs(this.energy.get(0).get(right) - this.energy.get(0).get(left));
-            this.minimums[0][w] = cU;
+            this.minimums[0][w] = 0;
             this.map[0][w] = cU;
         }
         for (int h = 1; h < this.height; h++) {
