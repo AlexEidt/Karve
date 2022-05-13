@@ -304,9 +304,9 @@ public class Utils {
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         if (horizontal) {
             int index = 0;
-            for (int y = 0; y < height; y++) {
+            for (int y = height - 1; y >= 0; y--) {
                 for (int x = 0; x < width; x++) {
-                    bufferedImage.setRGB(height - y - 1, x, image[index++]);
+                    bufferedImage.setRGB(y, x, image[index++]);
                 }
             }
         } else {
