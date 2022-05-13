@@ -3,8 +3,7 @@
  * Alex Eidt
  */
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
 
 /*
  * Implements the Seam Carving algorithm using forward energy.
@@ -21,12 +20,17 @@ public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
         // the original image.
         this.energy = new ArrayList<>(this.height);
         for (int h = 0; h < this.height; h++) {
-            List<Integer> row = new ArrayList<>(this.width);
-            for (int w = 0; w < this.width; w++) {
-                row.add(gray[h][w]);
-            }
-            this.energy.add(row);
+            this.energy.add(new ArrayList<>(this.width));
         }
+
+        Utils.parallel((cpu, cpus) -> {
+            for (int h = cpu; h < this.height; h += cpus) {
+                for (int w = 0; w < this.width; w++) {
+                    this.energy.get(h).add(gray[h][w]);
+                }
+            }
+        });
+
         this.minimums = new int[this.height][this.width];
         this.energyMap();
     }

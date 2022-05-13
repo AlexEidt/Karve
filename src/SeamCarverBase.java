@@ -4,7 +4,9 @@
  * Implements the SeamCarverBase class.
  */
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 /*
  * The SeamCarverBase class implements the basic Seam Carving operations
@@ -250,9 +252,8 @@ public class SeamCarverBase {
     protected void updateImage() {
         Utils.parallel((cpu, cpus) -> {
             for (int h = cpu; h < this.height; h += cpus) {
-                List<Integer> row = this.image.get(h);
                 for (int w = 0; w < this.width; w++) {
-                    this.data[h * this.width + w] = row.get(w);
+                    this.data[h * this.width + w] = this.image.get(h).get(w);
                 }
             }
         });
@@ -268,9 +269,8 @@ public class SeamCarverBase {
     protected void updateImage(int[] path, int color) {
         Utils.parallel((cpu, cpus) -> {
             for (int h = cpu; h < this.height; h += cpus) {
-                List<Integer> row = this.image.get(h);
                 for (int w = 0; w < this.width; w++) {
-                    this.data[h * this.width + w] = row.get(w);
+                    this.data[h * this.width + w] = this.image.get(h).get(w);
                 }
                 int pathIndex = path[h];
                 for (int i = pathIndex - 1; i <= pathIndex + 1; i++) {

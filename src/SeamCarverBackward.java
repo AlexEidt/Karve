@@ -3,7 +3,7 @@
  * Alex Eidt
  */
 
-import java.util.*;
+import java.util.List;
 
 /*
  * Implements the Seam Carving algorithm using backward energy.

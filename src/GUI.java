@@ -5,6 +5,7 @@
  * to interface with the Karver.
  */
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -32,6 +33,8 @@ public class GUI {
     public static final int ICON_SIZE = 30;
     // Energy Type to use for Seam Carving. Either Forward or Backward.
     public static final EnergyType ENERGY_TYPE = EnergyType.BACKWARD;
+    // If true, crop snapshots, otherwise all snapshots have same size.
+    public static final boolean CROP_SNAPSHOT = false;
 
     // Determines the width of the "brush" used to mark the priority mask by clicking on the image.
     private int brushWidth;
@@ -49,8 +52,8 @@ public class GUI {
     private boolean horizontal;
     // Track frame numbers when recording or taking snapshots.
     private int count;
-    // Scaling factor for display image.
-    private int scale;
+    // Scaling factors for display image.
+    private int scaleW, scaleH;
     // The display image.
     private final JLabel displayImage;
     // Stores the vertical and horizontal Seam Carvers.
@@ -59,6 +62,8 @@ public class GUI {
     private int idx;
     // Create Seam Carvers.
     private final SeamCarverFactory factory;
+    // Buffered Image for display.
+    private BufferedImage bufferedImage;
 
     public GUI() {
         this.carver = new SeamCarver[]{null, null};
@@ -116,8 +121,10 @@ public class GUI {
         horizontalCheckBox.addItemListener(e -> {
             this.horizontal = !this.horizontal;
             this.idx = this.horizontal ? 1 : 0;
-            if (this.update) this.setDisplayImage();
-            frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
+            this.clearBufferedImage();
+            if (this.update) this.updateDisplayImage();
+            SeamCarver carver = this.carver[this.idx];
+            frame.setTitle("Karve - " + carver.getWidth() + " x " + carver.getHeight());
         });
         checkBoxPanel.add(horizontalCheckBox);
         // "Recording" checkbox.
@@ -132,7 +139,10 @@ public class GUI {
         updateCheckBox.addItemListener(e -> {
             this.update = !this.update;
             this.carver[this.idx].updateImage(this.highlight, SEAM_COLOR);
-            if (this.update) this.setDisplayImage();
+            if (this.update) {
+                this.clearBufferedImage();
+                this.updateDisplayImage();
+            }
             this.carver[this.idx].setUpdate(this.update);
         });
         checkBoxPanel.add(updateCheckBox);
@@ -174,6 +184,7 @@ public class GUI {
             addButton.setEnabled(this.carving);
             removeButton.setEnabled(this.carving);
             updateCheckBox.setEnabled(this.carving);
+            horizontalCheckBox.setEnabled(this.carving);
             this.carving = !this.carving;
             if (this.carving) {
                 playButton.setIcon(pause);
@@ -186,26 +197,28 @@ public class GUI {
         // Add seam back when "Add" button is clicked.
         addButton.addActionListener(e -> {
             this.direction = true;
-            boolean valid = this.carver[this.idx].add(this.highlight, SEAM_COLOR);
+            SeamCarver carver = this.carver[this.idx];
+            boolean valid = carver.add(this.highlight, SEAM_COLOR);
             if (valid) {
-                if (this.recording) captureSnapshot(this.carver[this.idx]);
-                if (this.update) this.setDisplayImage();
-                frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
+                if (this.recording) captureSnapshot();
+                if (this.update) this.updateDisplayImage();
+                frame.setTitle("Karve - " + carver.getWidth() + " x " + carver.getHeight());
             }
         });
         // Remove seam when "Remove" button is clicked.
         removeButton.addActionListener(e -> {
             this.direction = false;
-            boolean valid = this.carver[this.idx].remove(this.highlight, SEAM_COLOR);
+            SeamCarver carver = this.carver[this.idx];
+            boolean valid = carver.remove(this.highlight, SEAM_COLOR);
             if (valid) {
-                if (this.recording) captureSnapshot(this.carver[this.idx]);
-                if (this.update) this.setDisplayImage();
-                frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
+                if (this.recording) captureSnapshot();
+                if (this.update) this.updateDisplayImage();
+                frame.setTitle("Karve - " + carver.getWidth() + " x " + carver.getHeight());
             }
         });
         // Create a snapshot of the current image when the "Snapshot" button is clicked.
         snapshotButton.addActionListener(e -> {
-            if (!this.recording) captureSnapshot(this.carver[this.idx]);
+            if (!this.recording) captureSnapshot();
         });
         buttonPanel.add(playButton);
         buttonPanel.add(addButton);
@@ -234,10 +247,11 @@ public class GUI {
      * @param slider    The slider used to determine animation speed.
      */
     private void carveAdd(JFrame frame, JSlider slider) {
-        while (this.carving && carver[this.idx].add(this.highlight, SEAM_COLOR)) {
-            if (this.recording) captureSnapshot(this.carver[this.idx]);
-            if (this.update) this.setDisplayImage();
-            frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
+        SeamCarver carver = this.carver[this.idx];
+        while (this.carving && carver.add(this.highlight, SEAM_COLOR)) {
+            if (this.recording) captureSnapshot();
+            if (this.update) this.updateDisplayImage();
+            frame.setTitle("Karve - " + carver.getWidth() + " x " + carver.getHeight());
             Utils.delay(SLIDER - slider.getValue());
         }
     }
@@ -249,11 +263,23 @@ public class GUI {
      * @param slider    The slider used to determine animation speed.
      */
     private void carveRemove(JFrame frame, JSlider slider) {
-        while (this.carving && carver[this.idx].remove(this.highlight, SEAM_COLOR)) {
-            if (this.recording) captureSnapshot(this.carver[this.idx]);
-            if (this.update) this.setDisplayImage();
-            frame.setTitle("Karve - " + this.carver[this.idx].getWidth() + " x " + this.carver[this.idx].getHeight());
+        SeamCarver carver = this.carver[this.idx];
+        while (this.carving && carver.remove(this.highlight, SEAM_COLOR)) {
+            if (this.recording) captureSnapshot();
+            if (this.update) this.updateDisplayImage();
+            frame.setTitle("Karve - " + carver.getWidth() + " x " + carver.getHeight());
             Utils.delay(SLIDER - slider.getValue());
+        }
+    }
+
+    /*
+     * Clears the display image by making all pixels transparent.
+     */
+    private void clearBufferedImage() {
+        for (int y = 0; y < this.bufferedImage.getHeight(); y++) {
+            for (int x = 0; x < this.bufferedImage.getWidth(); x++) {
+                this.bufferedImage.setRGB(x, y, 0xFF);
+            }
         }
     }
 
@@ -261,11 +287,9 @@ public class GUI {
      * Sets/Updates the display image to the current state of the selected
      * Seam Carver.
      */
-    private void setDisplayImage() {
-        SeamCarver carver = this.carver[this.idx];
-        ImageIcon icon = getScaledImage(carver);
+    private void updateDisplayImage() {
+        ImageIcon icon = this.updateBufferedIcon();
         this.displayImage.setIcon(icon);
-        this.displayImage.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
     }
 
     /*
@@ -305,37 +329,31 @@ public class GUI {
                     File image = droppedFiles.get(0);
 
                     // Vertical Seam Carver
-                    carver[0] = factory.create(image, ENERGY_TYPE);
+                    carver[0] = factory.create(image, false, ENERGY_TYPE);
                     // Horizontal Seam Carver
-                    carver[1] = factory.create(
-                            Utils.transpose(Utils.mirror(Utils.readImage(image))),
-                            ENERGY_TYPE
-                    );
+                    carver[1] = factory.create(image, true, ENERGY_TYPE);
 
-                    brushWidth = Utils.min(carver[0].getWidth(), carver[0].getHeight()) / 120;
-                    if (brushWidth == 0) {
-                        brushWidth = 5;
-                    }
+                    int width = carver[0].getWidth();
+                    int height = carver[0].getHeight();
+                    brushWidth = Utils.max(Utils.min(width, height) / 120, 5);
+
+                    bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                    bufferedImage.setAccelerationPriority(1f);
 
                     idx = horizontal ? 1 : 0;
-                    scale = Utils.getDimensions(carver[idx].getWidth(), carver[idx].getHeight());
+                    int scale = Utils.getDimensions(carver[idx].getWidth(), carver[idx].getHeight());
+                    scaleW = width / scale;
+                    scaleH = height / scale;
 
-                    frame.setTitle("Karve - " + carver[idx].getWidth() + " x " + carver[idx].getHeight());
-
-                    ImageIcon imageIcon = getScaledImage(carver[idx]);
-                    if (horizontal) {
-                        displayImage.setVerticalAlignment(JLabel.CENTER);
-                    } else {
-                        displayImage.setHorizontalAlignment(JLabel.RIGHT);
-                    }
-                    displayImage.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
-                    displayImage.setIcon(imageIcon);
+                    ImageIcon icon = updateBufferedIcon();
+                    displayImage.setIcon(icon);
 
                     setEnabled(menuPanel, true);
                     frame.pack();
+                    frame.setTitle("Karve - " + carver[idx].getWidth() + " x " + carver[idx].getHeight());
 
                     evt.dropComplete(true);
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                     evt.dropComplete(false);
                 }
             }
@@ -359,79 +377,91 @@ public class GUI {
              */
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (carving || !update || carver[0] == null || ENERGY_TYPE == EnergyType.FORWARD) return;
+                if (carving || !update || carver[idx] == null || ENERGY_TYPE == EnergyType.FORWARD) return;
                 float x = e.getX(), y = e.getY();
-                int imageWidth = carver[idx].getWidth(), imageHeight = carver[idx].getHeight();
-                // If horizontal, swap image width and height for calculations below.
-                if (horizontal) { int temp = imageWidth; imageWidth = imageHeight; imageHeight = temp; }
+                SeamCarver current = carver[idx];
+                int imageWidth = bufferedImage.getWidth(), imageHeight = bufferedImage.getHeight();
                 float labelStepW = (float) imageWidth / displayImage.getWidth();
                 float labelStepH = (float) imageHeight / displayImage.getHeight();
                 int cX = (int) (x * labelStepW + 0.5f); // X coordinate on actual image.
                 int cY = (int) (y * labelStepH + 0.5f); // Y coordinate on actual image.
                 if (horizontal) { int temp = cX; cX = cY; cY = temp; cY = imageWidth - cY; }
                 if (horizontal) { int temp = imageWidth; imageWidth = imageHeight; imageHeight = temp; }
-                int[] image = carver[idx].getImage();
+                if (cX >= imageWidth || cY >= imageHeight) return;
                 boolean isLeftClick = SwingUtilities.isLeftMouseButton(e);
-                for (int row = cY - brushWidth; row <= cY + brushWidth; row++) {
-                    if (row < 0 || row >= imageHeight) continue;
-                    for (int col = cX - brushWidth; col <= cX + brushWidth; col++) {
-                        if (col < 0 || col >= imageWidth) continue;
-                        // If left click, remove edge at given coordinate.
-                        // If right click, add edge.
-                        carver[idx].setEnergy(col, row, isLeftClick ? 0 : 255);
-                        image[row * imageWidth + col] = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
+                int[] image = current.getImage();
+                int cWidth = current.getWidth(), cHeight = current.getHeight();
+                for (int r = Utils.max(cY - brushWidth, 0); r < Utils.min(cY + brushWidth, cHeight); r++) {
+                    for (int c = Utils.max(cX - brushWidth, 0); c < Utils.min(cX + brushWidth, cWidth); c++) {
+                        // If left click, remove edge at given coordinate. If right click, add edge.
+                        current.setEnergy(c, r, isLeftClick ? 0 : 255);
+                        image[r * cWidth + c] = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
                     }
                 }
-                setDisplayImage();
+                updateDisplayImage();
             }
         });
     }
 
     /*
-     * Scales the image being carved.
+     * Updates the display image for the UI.
      *
-     * @param carver    The SeamCarver being used to carve the image.
      * @return          An ImageIcon representing the scaled image.
      */
-    private ImageIcon getScaledImage(SeamCarver carver) {
+    private ImageIcon updateBufferedIcon() {
+        SeamCarver carver = this.carver[this.idx];
+
         int width = carver.getWidth();
         int height = carver.getHeight();
-        BufferedImage display = Utils.bufferImage(carver.getImage(), width, height);
+
+        int[] pixels = carver.getImage();
         if (this.horizontal) {
-            // Rotate display image and swap width and height.
-            display = Utils.rotate90(display);
-            int temp = width;
-            width = height;
-            height = temp;
+            int index = 0;
+            for (int y = height - 1; y >= 0; y--) {
+                for (int x = 0; x < width; x++) {
+                    this.bufferedImage.setRGB(y, x, pixels[index++]);
+                }
+            }
+            for (int y = 0; y < height; y++) {
+                this.bufferedImage.setRGB(y, width - 1, 0xFF);
+            }
+        } else {
+            this.bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
+            for (int y = 0; y < height; y++) {
+                this.bufferedImage.setRGB( width - 1, y, 0xFF);
+            }
         }
-        Image displayIcon = new ImageIcon(display).getImage();
-        displayIcon = displayIcon.getScaledInstance(
-                Utils.max(width / this.scale, 1),
-                Utils.max(height / this.scale, 1),
+
+        return new ImageIcon(this.bufferedImage.getScaledInstance(
+                Utils.max(this.scaleW, 1),
+                Utils.max(this.scaleH, 1),
                 Image.SCALE_FAST
-        );
-        return new ImageIcon(displayIcon);
+        ));
     }
 
     /*
      * Captures the current image and saves to a PNG file in the "Snapshots" directory.
      *
-     * @param carver    The SeamCarver being used to carve the image.
      * @return          See "Snapshots" directory.
      */
-    private void captureSnapshot(SeamCarver carver) {
-        try {
+    private void captureSnapshot() {
+        SeamCarver carver = this.carver[this.idx];
+        String filename = Utils.joinPath(Main.SNAPSHOTS_DIR, "Snapshot" + this.count++ + ".png");
+        if (CROP_SNAPSHOT) {
             Utils.writeImage(
                     carver.getImage(),
                     carver.getWidth(),
                     carver.getHeight(),
                     this.horizontal,
-                    Utils.joinPath(Main.SNAPSHOTS_DIR, "Snapshot" + this.count++ + ".png")
+                    filename
             );
-        } catch (IOException ioException) {
-            System.out.println("Failed to create Snapshot Image.");
-            ioException.printStackTrace();
+        } else {
+            File snapshot = new File(filename);
+            try {
+                ImageIO.write(this.bufferedImage, "PNG", snapshot);
+            } catch (IOException ignored) {}
         }
+
     }
 
     /*

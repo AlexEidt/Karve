@@ -12,15 +12,18 @@ enum EnergyType {
 
 public class SeamCarverFactory {
 
-    public SeamCarver create(File file, EnergyType type) {
-        return this.create(Utils.readImage(file), type);
+    public SeamCarver create(File file, boolean horizontal, EnergyType type) {
+        return this.create(Utils.readImage(file), horizontal, type);
     }
 
-    public SeamCarver create(String filename, EnergyType type) {
-        return this.create(Utils.readImage(filename), type);
+    public SeamCarver create(String filename, boolean horizontal, EnergyType type) {
+        return this.create(Utils.readImage(filename), horizontal, type);
     }
 
-    public SeamCarver create(int[][] image, EnergyType type) {
+    private SeamCarver create(int[][] image, boolean horizontal, EnergyType type) {
+        if (horizontal) {
+            image = Utils.transpose(Utils.mirror(image));
+        }
         switch (type) {
             case BACKWARD:
                 return new SeamCarverBackward(image);

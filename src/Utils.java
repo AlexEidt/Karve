@@ -62,22 +62,8 @@ public class Utils {
             for (Thread thread : threads) {
                 thread.join();
             }
-        } catch (InterruptedException ie) {}
-    }
-
-    /*
-     * Converts an integer array representing pixels to a BufferedImage, which is needed
-     * to display the image on the User Interface.
-     *
-     * @param image     The flattened image. Each int represents an RGB pixel.
-     * @param width     The width of the image.
-     * @param height    The height of the image.
-     * @return          The BufferedImage of the input image.
-     */
-    public static BufferedImage bufferImage(int[] image, int width, int height) {
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        bufferedImage.setRGB(0, 0, width, height, image, 0, width);
-        return bufferedImage;
+        } catch (InterruptedException ignored) {
+        }
     }
 
     /*
@@ -247,29 +233,6 @@ public class Utils {
     }
 
     /*
-     * Captures the current image and saves to a PNG file in the "Snapshots" directory.
-     *
-     * @param carver        The SeamCarver being used to carve the image.
-     * @param filename      Filename of the output image.
-     * @param horizontal    For use with horizontal seam carving.
-     * @return              See "Snapshots" directory.
-     */
-    public static void captureSnapshot(SeamCarver carver, String filename, boolean horizontal) {
-        try {
-            Utils.writeImage(
-                    carver.getImage(),
-                    carver.getWidth(),
-                    carver.getHeight(),
-                    horizontal,
-                    filename
-            );
-        } catch (IOException ioException) {
-            System.out.println("Failed to create Snapshot Image.");
-            ioException.printStackTrace();
-        }
-    }
-
-    /*
      * Delays the main thread for "delay" milliseconds.
      *
      * @param delay:    Delay in milliseconds.
@@ -277,9 +240,7 @@ public class Utils {
     public static void delay(int delay) {
         try {
             TimeUnit.MILLISECONDS.sleep(delay);
-        } catch (InterruptedException interruptedException) {
-            interruptedException.printStackTrace();
-        }
+        } catch (InterruptedException ignored) {}
     }
 
     /*
@@ -323,26 +284,6 @@ public class Utils {
     }
 
     /*
-     * Rotates the given BufferedImage by 90 degrees.
-     * Original Code from this StackOverflow Thread:
-     * https://stackoverflow.com/questions/8639567/java-rotating-images
-     *
-     * @param image     BufferedImage to rotate.
-     * @return          The rotated BufferedImage.
-     */
-    public static BufferedImage rotate90(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        BufferedImage rotated = new BufferedImage(height, width, image.getType());
-        Graphics2D graphic = rotated.createGraphics();
-        graphic.translate((height - width) / 2, (width - height) / 2);
-        graphic.rotate(Math.PI / 2, width / 2, height / 2);
-        graphic.drawRenderedImage(image, null);
-        graphic.dispose();
-        return rotated;
-    }
-
-    /*
      * Writes the given integer array to an image.
      *
      * @param image         Flattened image as an integer array. Each int represents an RGB pixel.
@@ -358,11 +299,22 @@ public class Utils {
             int height,
             boolean horizontal,
             String filename
-    ) throws IOException {
+    ) {
         File file = new File(filename);
-        BufferedImage bufferedImage = bufferImage(image, width, height);
-        if (horizontal) bufferedImage = rotate90(bufferedImage);
-        ImageIO.write(bufferedImage, "PNG", file);
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        if (horizontal) {
+            int index = 0;
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    bufferedImage.setRGB(height - y - 1, x, image[index++]);
+                }
+            }
+        } else {
+            bufferedImage.setRGB(0, 0, width, height, image, 0, width);
+        }
+        try {
+            ImageIO.write(bufferedImage, "PNG", file);
+        } catch (IOException ignored) {}
     }
 
     /*
@@ -392,9 +344,6 @@ public class Utils {
 
             return pixels;
         } catch (IOException e) {
-            System.out.println("Error opening " + file.getName());
-            System.out.println(e.getMessage());
-            System.exit(1);
             return null;
         }
     }

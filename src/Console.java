@@ -39,19 +39,15 @@ public class Console {
         System.out.println("Number of Seams to remove?: ");
         int seams = console.nextInt();
 
-        int[][] image = Utils.readImage(filename);
-        if (horizontal) {
-            image = Utils.transpose(Utils.mirror(image));
-        }
         SeamCarverFactory factory = new SeamCarverFactory();
-        SeamCarver carver = factory.create(image, type);
+        SeamCarver carver = factory.create(filename, horizontal, type);
 
         System.out.println("Carving...");
         int numCarved = carver.remove(seams, showSeams, highlightColor);
         System.out.println(numCarved + " seams carved from " + filename + ".");
         System.out.println("Output file name: ");
         String output = console.next();
-        Utils.captureSnapshot(carver, output, horizontal);
+        Utils.writeImage(carver.getImage(), carver.getWidth(), carver.getHeight(), horizontal, output);
         System.out.println("Carved image saved as " + output + ".");
 
         console.close();
