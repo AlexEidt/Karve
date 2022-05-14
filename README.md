@@ -46,22 +46,22 @@ Similarly, any areas you right click on will be marked in green and the algorith
 
 ## Checkboxes
 
-Button | Description
---- | ---
-**Show Seams** | If selected, shows the seams being added/removed from the image.
-**Horizontal** | If selected, carves out horizontal seams instead of vertical ones.
-**Recording** | If selected, saves each carved frame as an image in the `Snapshots` directory.
-**Update** | If selected, updates the image on the UI. De-select this option for more efficient carving.
+Button | Description | Key
+--- | --- | ---
+**Show Seams** | If selected, shows the seams being added/removed from the image. | `S`
+**Horizontal** | If selected, carves out horizontal seams instead of vertical ones. | `H`
+**Recording** | If selected, saves each carved frame as an image in the `Snapshots` directory. | `R`
+**Update** | If selected, updates the image on the UI. De-select this option for more efficient carving. | `U`
 
 ## Buttons/Icons
 
-Button | Description
---- | ---
-<img src="src/Icons/speedometer.gif" width=70px alt="Speedometer Icon" /> | Indicates carving speed.
-<img src="src/Icons/startstop.gif" width=70px alt="Start and Stop Icons" /> | Start/Stop removing/adding seams from the image. The speed of removal is determined by the slider.
-<img src="src/Icons/add.png" width=70px alt="Add Icon" /> | Add back the most recently removed seam.
-<img src="src/Icons/remove.png" width=70px alt="Remove Icon" /> | Remove the next seam.
-<img src="src/Icons/snapshot.png" width=70px alt="Snapshot Icon" /> | Take a snapshot of the current image.
+Button | Description | Key
+--- | --- | ---
+<img src="src/Icons/speedometer.gif" width=70px alt="Speedometer Icon" /> | Indicates carving speed. | 
+<img src="src/Icons/startstop.gif" width=70px alt="Start and Stop Icons" /> | Start/Stop removing/adding seams from the image. The speed of removal is determined by the slider. | `SPACE`
+<img src="src/Icons/add.png" width=70px alt="Add Icon" /> | Add back the most recently removed seam. | `RIGHT ARROW`
+<img src="src/Icons/remove.png" width=70px alt="Remove Icon" /> | Remove the next seam. | `LEFT ARROW`
+<img src="src/Icons/snapshot.png" width=70px alt="Snapshot Icon" /> | Take a snapshot of the current image. | `C`
 
 # Acknowledgements
 

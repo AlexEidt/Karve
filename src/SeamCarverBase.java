@@ -109,7 +109,7 @@ public class SeamCarverBase {
      * @return          The number of seams that were actually added.
      */
     public int add(int count, boolean highlight, int color) {
-        if (this.seams.isEmpty()) return 0;
+        if (this.seams.isEmpty() || count <= 0) return 0;
         this.update = false;
         int index = 1;
         while (index++ < count && this.seams.size() > 1) {
@@ -164,7 +164,7 @@ public class SeamCarverBase {
      * @return          The number of seams that were actually removed.
      */
     public int remove(int count, boolean highlight, int color) {
-        if (this.width == 2) return 0;
+        if (this.width == 2 || count <= 0) return 0;
         this.update = false;
         int index = 1;
         while (index++ < count && this.width > 3) {

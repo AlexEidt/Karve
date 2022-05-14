@@ -12,8 +12,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -112,7 +111,11 @@ public class GUI {
         JPanel checkBoxPanel = new JPanel(new GridLayout(2, 2));
         JCheckBox highlightCheckBox = new JCheckBox("Show Seams");
         highlightCheckBox.setFont(font);
-        highlightCheckBox.addItemListener(e -> this.highlight = !this.highlight);
+        highlightCheckBox.addItemListener(e -> {
+            this.highlight = !this.highlight;
+            this.carver[this.idx].updateImage(this.highlight, SEAM_COLOR);
+            this.updateDisplayImage();
+        });
         checkBoxPanel.add(highlightCheckBox);
         // "Horizontal" checkbox.
         JCheckBox horizontalCheckBox = new JCheckBox("Horizontal");
@@ -146,6 +149,11 @@ public class GUI {
         });
         checkBoxPanel.add(updateCheckBox);
 
+        this.addKeyListeners(
+                new AbstractButton[] {highlightCheckBox, horizontalCheckBox, recordingCheckBox, updateCheckBox},
+                new int[] {KeyEvent.VK_S, KeyEvent.VK_H, KeyEvent.VK_R, KeyEvent.VK_U}
+        );
+
         menuPanel.add(checkBoxPanel);
 
         // Add all "Pause/Play", "Add", "Remove" and "Snapshot" buttons.
@@ -160,6 +168,11 @@ public class GUI {
         removeButton.setIcon(icon("remove.png"));
         JButton snapshotButton = new JButton("Snapshot");
         snapshotButton.setIcon(icon("snapshot.png"));
+
+        this.addKeyListeners(
+                new AbstractButton[] {playButton, addButton, removeButton, snapshotButton},
+                new int[] {KeyEvent.VK_SPACE, KeyEvent.VK_RIGHT, KeyEvent.VK_LEFT, KeyEvent.VK_C}
+        );
 
         // Function to run in separate thread when the "Play" button is pressed.
         Runnable animate = () -> {
@@ -183,7 +196,9 @@ public class GUI {
             addButton.setEnabled(this.carving);
             removeButton.setEnabled(this.carving);
             snapshotButton.setEnabled(this.carving);
+            highlightCheckBox.setEnabled(this.carving);
             updateCheckBox.setEnabled(this.carving);
+            recordingCheckBox.setEnabled(this.carving);
             horizontalCheckBox.setEnabled(this.carving);
             this.carving = !this.carving;
             if (this.carving) {
@@ -288,7 +303,7 @@ public class GUI {
      * Seam Carver.
      */
     private void updateDisplayImage() {
-        ImageIcon icon = this.updateBufferedIcon();
+        ImageIcon icon = this.updateBufferedImage();
         this.displayImage.setIcon(icon);
     }
 
@@ -345,7 +360,7 @@ public class GUI {
                     scaleW = width / scale;
                     scaleH = height / scale;
 
-                    ImageIcon icon = updateBufferedIcon();
+                    ImageIcon icon = updateBufferedImage();
                     displayImage.setIcon(icon);
 
                     setEnabled(menuPanel, true);
@@ -358,6 +373,26 @@ public class GUI {
                 }
             }
         });
+    }
+
+    /*
+     * Adds Key Bindings to Buttons.
+     *
+     * @param buttons       A list of buttons to add key bindings to.
+     * @param keyCodes      A list of Key Codes that each button should map to.
+     */
+    private void addKeyListeners(AbstractButton[] buttons, int[] keyCodes) {
+        for (int i = 0; i < buttons.length; i++) {
+            AbstractButton button = buttons[i];
+            button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).clear();
+            button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(keyCodes[i], 0), "KEY_BINDING");
+            button.getActionMap().put("KEY_BINDING", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    button.doClick();
+                }
+            });
+        }
     }
 
     /*
@@ -411,7 +446,7 @@ public class GUI {
      *
      * @return          An ImageIcon representing the scaled image.
      */
-    private ImageIcon updateBufferedIcon() {
+    private ImageIcon updateBufferedImage() {
         SeamCarver carver = this.carver[this.idx];
 
         int width = carver.getWidth();
