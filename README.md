@@ -10,8 +10,9 @@
 
 * Vertical and Horizontal Seam Carving
 * "Animate" the Seam Carving Process at varying speeds
-* Real time carving for moderately sized images
+* Fast carving for moderately sized images
 * Drag and Drop Images into the application
+* Removed Seams can be added back onto the image
 * Object removal and preservation via highlighting
 * Togglable Seam Highlighting
 * Togglable GUI updating for faster carving
