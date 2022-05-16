@@ -8,7 +8,7 @@ import java.util.List;
 /*
  * Implements the Seam Carving algorithm using backward energy.
  */
-public class SeamCarverBackward extends SeamCarverBase implements SeamCarver {
+public final class SeamCarverBackward extends SeamCarverBase implements SeamCarver {
 
     public SeamCarverBackward(int[][] image) {
         super(image);
