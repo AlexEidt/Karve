@@ -62,8 +62,7 @@ public class Utils {
             for (Thread thread : threads) {
                 thread.join();
             }
-        } catch (InterruptedException ignored) {
-        }
+        } catch (InterruptedException ignored) {}
     }
 
     /*
