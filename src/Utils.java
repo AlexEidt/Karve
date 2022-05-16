@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class Utils {
+public final class Utils {
+    private Utils() {}
+
     // Returns the minimum of "a", "b", and "c".
     public static int min(int a, int b, int c) {
         return (a < b) ? (a < c ? a : c) : (b < c ? b : c);
