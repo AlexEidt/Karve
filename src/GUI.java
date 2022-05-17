@@ -425,7 +425,7 @@ public class GUI {
                 if (horizontal) { int temp = imageWidth; imageWidth = imageHeight; imageHeight = temp; }
                 if (cX >= imageWidth || cY >= imageHeight) return;
                 boolean isLeftClick = SwingUtilities.isLeftMouseButton(e);
-                int energy = isLeftClick ? 0 : (ENERGY_TYPE == EnergyType.FORWARD ? rand.nextInt(0, 256) : 255);
+                int energy = isLeftClick ? 0 : (ENERGY_TYPE == EnergyType.FORWARD ? rand.nextInt(256) : 255);
                 int color = isLeftClick ? Color.RED.getRGB() : Color.GREEN.getRGB();
                 int[] image = current.getImage();
                 int cWidth = current.getWidth(), cHeight = current.getHeight();
