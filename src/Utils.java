@@ -13,9 +13,11 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-public class Utils {
+public final class Utils {
+    private Utils() {}
+
     // Returns the minimum of "a", "b", and "c".
     public static int min(int a, int b, int c) {
         return (a < b) ? (a < c ? a : c) : (b < c ? b : c);
@@ -47,22 +49,25 @@ public class Utils {
      */
     public static void parallel(ParallelFunc func) {
         int cpus = Runtime.getRuntime().availableProcessors();
-
-        Thread[] threads = new Thread[cpus];
-        for (int i = 0; i < cpus; i++) {
-            int cpu = i;
-            threads[cpu] = new Thread(() -> func.process(cpu, cpus));
-        }
-
-        for (Thread thread : threads) {
-            thread.start();
-        }
-
+        ExecutorService executor = Executors.newFixedThreadPool(cpus);
         try {
-            for (Thread thread : threads) {
-                thread.join();
+            Future<?>[] tasks = new Future<?>[cpus];
+            for (int i = 0; i < cpus; i++) {
+                int cpu = i;
+                tasks[cpu] = executor.submit(() -> func.process(cpu, cpus));
             }
-        } catch (InterruptedException ignored) {}
+
+            for (Future<?> task : tasks) {
+                try {
+                    task.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } finally {
+            executor.shutdown();
+        }
+
     }
 
     /*

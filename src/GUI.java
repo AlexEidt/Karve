@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Random;
 
-public class GUI {
+public final class GUI {
     // Determines the range (0 - SLIDER) of values for the slider.
     public static volatile int SLIDER = 1000;
     // Color of the seams (if highlighting).

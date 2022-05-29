@@ -8,7 +8,7 @@ import java.util.ArrayList;
 /*
  * Implements the Seam Carving algorithm using forward energy.
  */
-public class SeamCarverForward extends SeamCarverBase implements SeamCarver {
+public final class SeamCarverForward extends SeamCarverBase implements SeamCarver {
 
     // Used as a cache to keep track of the minimum error created by removing a seam.
     private final int[][] minimums;

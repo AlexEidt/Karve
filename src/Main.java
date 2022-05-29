@@ -6,7 +6,9 @@
 
 import java.io.File;
 
-public class Main {
+public final class Main {
+    private Main() {}
+
     public static final String SNAPSHOTS_DIR = "Snapshots";
 
     public static void main(String... args) {

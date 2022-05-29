@@ -5,13 +5,7 @@
 
 import java.io.File;
 
-enum EnergyType {
-    BACKWARD,
-    FORWARD
-}
-
-public class SeamCarverFactory {
-
+public final class SeamCarverFactory {
     public SeamCarver create(File file, boolean horizontal, EnergyType type) {
         return this.create(Utils.readImage(file), horizontal, type);
     }
