@@ -14,7 +14,6 @@ import java.util.Stack;
  * approaches.
  */
 public abstract class SeamCarverBase {
-
     // Height of the image.
     protected int height;
     // Width of the image.
