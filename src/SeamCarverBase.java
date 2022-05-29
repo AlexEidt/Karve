@@ -13,7 +13,7 @@ import java.util.Stack;
  * that are inherited by all children, which implement different carving
  * approaches.
  */
-public class SeamCarverBase {
+public abstract class SeamCarverBase {
 
     // Height of the image.
     protected int height;
