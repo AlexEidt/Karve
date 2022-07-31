@@ -454,20 +454,28 @@ public class GUI {
 
         int[] pixels = carver.getImage();
         if (this.horizontal) {
-            int index = 0;
-            for (int y = height - 1; y >= 0; y--) {
-                for (int x = 0; x < width; x++) {
-                    this.bufferedImage.setRGB(y, x, pixels[index++]);
+            Utils.parallel((cpu, cpus) -> {
+                for (int y = height - 1 - cpu; y >= 0; y -= cpus) {
+                    for (int x = 0; x < width; x++) {
+                        this.bufferedImage.setRGB(y, x, pixels[y * width + x]);
+                    }
                 }
-            }
-            for (int y = 0; y < height; y++) {
-                this.bufferedImage.setRGB(y, width - 1, 0xFF);
-            }
+                for (int y = cpu; y < height; y += cpus) {
+                    this.bufferedImage.setRGB(y, width - 1, 0xFF);
+                }
+            });
         } else {
-            this.bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
-            for (int y = 0; y < height; y++) {
-                this.bufferedImage.setRGB(width - 1, y, 0xFF);
-            }
+            // this.bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
+            Utils.parallel((cpu, cpus) -> {
+                for (int y = cpu; y < height; y += cpus) {
+                    for (int x = 0; x < width; x++) {
+                        this.bufferedImage.setRGB(x, y, pixels[y * width + x]);
+                    }
+                }
+                for (int y = cpu; y < height; y += cpus) {
+                    this.bufferedImage.setRGB(width - 1, y, 0xFF);
+                }
+            });
         }
 
         return new ImageIcon(this.bufferedImage.getScaledInstance(
