@@ -465,7 +465,6 @@ public class GUI {
                 }
             });
         } else {
-            // this.bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
             Utils.parallel((cpu, cpus) -> {
                 for (int y = cpu; y < height; y += cpus) {
                     for (int x = 0; x < width; x++) {
