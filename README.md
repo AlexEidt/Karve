@@ -20,6 +20,7 @@
 * Snapshot current image
 * Record Seam Carving animation by saving carved image snapshots
 * Uses all CPU Cores for faster carving
+* No dependencies!
 
 To start, simply drag and drop the image into the application.
 
